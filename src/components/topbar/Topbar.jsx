@@ -1,8 +1,20 @@
 import React from "react";
 import "./topbar.css";
-import { NotificationsNone, Language, Settings } from "@material-ui/icons";
+import { useSelector } from "react-redux";
 
 export default function Topbar() {
+  const admin = useSelector((state) => state.user.currentUser);
+
+  const handleLogout = async (e) => {
+    try {
+      e.preventDefault();
+      await localStorage.clear();
+      window.location.reload(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="topbar">
       <div className="topbarWrapper">
@@ -10,22 +22,14 @@ export default function Topbar() {
           <span className="logo">my-shop admin</span>
         </div>
         <div className="topRight">
-          <div className="topbarIconContainer">
-            <NotificationsNone />
-            <span className="topIconBadge">2</span>
-          </div>
-          <div className="topbarIconContainer">
-            <Language />
-            <span className="topIconBadge">2</span>
-          </div>
-          <div className="topbarIconContainer">
-            <Settings />
-          </div>
-          <img
-            src="https://images.pexels.com/photos/1526814/pexels-photo-1526814.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500"
-            alt=""
-            className="topAvatar"
-          />
+          {admin && (
+            <p
+              onClick={handleLogout}
+              style={{ cursor: "pointer", color: "red" }}
+            >
+              logout
+            </p>
+          )}
         </div>
       </div>
     </div>

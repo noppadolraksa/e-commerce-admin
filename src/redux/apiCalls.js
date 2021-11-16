@@ -14,6 +14,7 @@ import {
   addProductFailure,
 } from "./productRedux";
 import { publicRequest, userRequest } from "../requestMethods";
+
 // fill username and password then check them to server
 export const login = async (dispatch, user) => {
   dispatch(loginStart());
@@ -29,7 +30,7 @@ export const getProducts = async (dispatch, user) => {
   dispatch(getProductStart());
   try {
     const res = await publicRequest.get("/product", user);
-    dispatch(getProductSuccess(res.data)); //name email whatever
+    dispatch(getProductSuccess(res.data));
   } catch (err) {
     dispatch(getProductFailure());
   }

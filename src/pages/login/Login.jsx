@@ -23,24 +23,26 @@ const Login = () => {
       }}
     >
       <h2 style={{ marginBottom: 20, color: "teal" }}>My-Shop Admin</h2>
-      <input
-        style={{ padding: 10, marginBottom: 20 }}
-        type="text"
-        placeholder="username"
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <input
-        style={{ padding: 10, marginBottom: 20 }}
-        type="password"
-        placeholder="password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <button
-        style={{ padding: "10px 20px", cursor: "pointer" }}
-        onClick={handleClick}
-      >
-        Login
-      </button>
+      <form>
+        <input
+          style={{ padding: 10, marginBottom: 20 }}
+          type="text"
+          placeholder="username"
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          style={{ padding: 10, marginBottom: 20 }}
+          type="password"
+          placeholder="password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button
+          style={{ padding: "10px 20px", cursor: "pointer" }}
+          onClick={handleClick}
+        >
+          Login
+        </button>
+      </form>
     </div>
   );
 };
