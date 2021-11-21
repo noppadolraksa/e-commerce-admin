@@ -75,6 +75,7 @@ export default function ProductList() {
         pageSize={8}
         checkboxSelection
       />
+      {console.log(products)}
     </div>
   );
 }

@@ -5,7 +5,7 @@ const persistRoot = JSON.parse(localStorage.getItem("persist:root"));
 let TOKEN = "";
 if (persistRoot) {
   TOKEN = JSON.parse(JSON.parse(localStorage.getItem("persist:root"))?.user)
-    .currentUser?.accessToken;
+    ?.currentUser?.accessToken;
 }
 //1# inspector > application > LocalStorage > http/localhost:3001 > Key = persist:root
 //console.log(localStorage.getItem("persist:root"));

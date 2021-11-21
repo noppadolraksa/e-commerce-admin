@@ -1,6 +1,6 @@
 import Sidebar from "./components/sidebar/Sidebar";
 import Topbar from "./components/topbar/Topbar";
-
+import "./App.css";
 import Home from "./pages/home/Home";
 import {
   BrowserRouter as Router,
@@ -16,17 +16,19 @@ import Product from "./pages/product/Product";
 import NewProduct from "./pages/newProduct/NewProduct";
 import Login from "./pages/login/Login";
 import { useSelector } from "react-redux";
+import LoginSuccess from "./pages/login/LoginSuccess";
 
 function App() {
-  const admin = useSelector((state) => state.user.currentUser);
+  const admin = useSelector((state) => state.user.currentUser?.isAdmin);
 
   return (
     <Router>
       <Switch>
         <Route path="/login">{admin ? <Redirect to="/" /> : <Login />}</Route>
-        {!admin ? (
-          <Redirect to="/login" />
-        ) : (
+        <Route path="/loginsuccess">
+          <LoginSuccess />
+        </Route>
+        {admin ? (
           <>
             <Topbar />
             <div className="container">
@@ -54,6 +56,8 @@ function App() {
               </Route>
             </div>
           </>
+        ) : (
+          <Redirect to="/login" />
         )}
       </Switch>
     </Router>

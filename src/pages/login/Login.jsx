@@ -1,15 +1,25 @@
 import React from "react";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../redux/apiCalls";
+import { useHistory } from "react-router-dom";
 
 const Login = () => {
+  const admin = useSelector((state) => state.user);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
+  const history = useHistory();
   const handleClick = (e) => {
     e.preventDefault();
-    login(dispatch, { username, password });
+    try {
+      login(dispatch, { username, password }).then(() => {
+        history.push("/loginsuccess");
+        window.location = "/";
+      });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -43,6 +53,7 @@ const Login = () => {
           Login
         </button>
       </form>
+      {admin.error && <p style={{ color: "red" }}>you're not admin...</p>}
     </div>
   );
 };

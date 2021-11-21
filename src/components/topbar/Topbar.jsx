@@ -1,15 +1,18 @@
 import React from "react";
 import "./topbar.css";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../../redux/userRedux";
+import { deleteAllProduct } from "../../redux/productRedux";
 
 export default function Topbar() {
   const admin = useSelector((state) => state.user.currentUser);
+  const dispatch = useDispatch();
 
   const handleLogout = async (e) => {
     try {
       e.preventDefault();
-      await localStorage.clear();
-      window.location.reload(true);
+      await dispatch(logoutUser());
+      await dispatch(deleteAllProduct());
     } catch (err) {
       console.error(err);
     }

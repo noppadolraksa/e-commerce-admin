@@ -1,12 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-
+const initialState = { products: [], isFetching: false, error: false };
 export const productSlice = createSlice({
   name: "product",
-  initialState: {
-    products: [],
-    isFetching: false,
-    error: false,
-  },
+  initialState,
   reducers: {
     //GET ALL
     getProductStart: (state) => {
@@ -37,6 +33,7 @@ export const productSlice = createSlice({
       state.isFetching = false;
       state.error = true;
     },
+    deleteAllProduct: () => initialState,
     //UPDATE
     updateProductStart: (state) => {
       state.isFetching = true;
@@ -75,6 +72,7 @@ export const {
   deleteProductStart,
   deleteProductSuccess,
   deleteProductFailure,
+  deleteAllProduct,
   updateProductStart,
   updateProductSuccess,
   updateProductFailure,
