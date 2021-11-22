@@ -2,7 +2,6 @@ import styled from "@emotion/styled";
 import {
   Button,
   TextField,
-  TextareaAutosize,
   MenuItem,
   Select,
   InputLabel,
@@ -43,6 +42,10 @@ const Textarea = styled.textarea``;
 const Section = styled.section`
   margin-bottom: 10px;
 `;
+const FormControlContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
 
 const FilterSection = styled.section`
   border: 1px solid lightblue;
@@ -77,13 +80,61 @@ const NewProduct = () => {
   const [filterTitleTwo, setFilterTitleTwo] = useState("");
   const [filterTitleTwoHappen, setFilterTitleTwoHappen] = useState(false);
 
-  const handlePromotion = (event) => {
-    if (event.target.checked === true) {
-      setPromotion([...promotion, event.target.name]);
+  const [inputFilterOne, setInputFilterOne] = useState([""]);
+  const [inputFilterTwo, setInputFilterTwo] = useState([""]);
+
+  const handlePromotion = (e) => {
+    if (e.target.checked === true) {
+      setPromotion([...promotion, e.target.name]);
     } else {
-      const res = promotion.filter((item) => item !== event.target.name);
+      const res = promotion.filter((item) => item !== e.target.name);
       setPromotion(res);
     }
+  };
+
+  const handleGenerateTable = () => {
+    console.log("hello");
+  };
+
+  // handle input change
+  const handleInputChange = (e, index) => {
+    const { value, name } = e.target;
+    if (name === "filterOne") {
+      const list = [...inputFilterOne];
+      list[index] = value;
+      setInputFilterOne(list);
+    } else {
+      const list = [...inputFilterTwo];
+      list[index] = value;
+      setInputFilterTwo(list);
+    }
+  };
+
+  // handle click event of the Remove button
+  const handleRemoveClick = (filterOneOrTwo, index) => {
+    if (filterOneOrTwo === "removeFilterOne") {
+      const list = [...inputFilterOne];
+      list.splice(index, 1);
+      setInputFilterOne(list);
+    } else {
+      const list = [...inputFilterTwo];
+      list.splice(index, 1);
+      setInputFilterTwo(list);
+    }
+  };
+
+  // handle click event of the Add button
+  const handleAddClick = (filterOneOrTwo) => {
+    if (filterOneOrTwo === "addFilterOne") {
+      setInputFilterOne([...inputFilterOne, ""]);
+    } else {
+      setInputFilterTwo([...inputFilterTwo, ""]);
+    }
+  };
+
+  const handleClearFilter = () => {
+    setInputFilterOne([inputFilterOne[0]]);
+    setInputFilterTwo([inputFilterTwo[0]]);
   };
 
   // const handleCategories = (e) => {
@@ -280,60 +331,160 @@ const NewProduct = () => {
         </Section>
         <hr />
         <br />
-        <FormControlLabel
-          sx={{
-            display: "block",
-          }}
-          control={
-            <Switch
-              size="small"
-              checked={filterTitleTwoHappen}
-              onChange={() => setFilterTitleTwoHappen(!filterTitleTwoHappen)}
-              name="Filter Product two ?"
-              color="primary"
-            />
-          }
-          label="Filter Product two ?"
-        />
+        <FormControlContainer>
+          <FormControlLabel
+            sx={{
+              display: "block",
+            }}
+            control={
+              <Switch
+                size="small"
+                checked={filterTitleTwoHappen}
+                onChange={() => setFilterTitleTwoHappen(!filterTitleTwoHappen)}
+                name="option two?"
+                color="primary"
+              />
+            }
+            label="option two?"
+          />
+          <Button
+            variant="text"
+            color="error"
+            onClick={() => handleClearFilter()}
+          >
+            clear
+          </Button>
+        </FormControlContainer>
+
         <FilterSection>
           <FilterSectionFlex style={{ width: "45%" }}>
             <TextField
-              style={{ marginRight: "10px" }}
               variant="outlined"
-              label="Brand"
-              size="small"
-              sx={textStyle}
-              onChange={(e) => setBrand(e.target.value)}
+              label="Option One"
+              size="medium"
+              onChange={(e) => setFilterTitleOne(e.target.value)}
             />
-            <Button
-              variant="outlined"
-              size="small"
-              sx={textStyle}
-              style={{ marginRight: "10px" }}
-            >
-              add filter one({`${1}/5`})
-            </Button>
+
+            {inputFilterOne.map((x, i) => {
+              return (
+                <FormControlContainer key={i}>
+                  <div style={{ flex: "100" }}>
+                    <TextField
+                      style={{ width: "100%" }}
+                      variant="outlined"
+                      label={`#${i + 1}/10`}
+                      inputProps={{ style: { fontSize: 12 } }} // font size of input text
+                      InputLabelProps={{
+                        style: { fontSize: 12, color: "#889aff" },
+                      }} // font size of input label
+                      size="small"
+                      name="filterOne"
+                      onChange={(e) => handleInputChange(e, i)}
+                    />
+                  </div>
+
+                  {inputFilterOne.length - 1 === i &&
+                    inputFilterOne.length !== 10 && (
+                      <div style={{ flex: "2" }}>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          name="addFilterOne"
+                          style={{ fontSize: 12 }}
+                          onClick={(e) => handleAddClick(e.target.name)}
+                        >
+                          add
+                        </Button>
+                      </div>
+                    )}
+                  {inputFilterOne.length !== 1 && (
+                    <div style={{ flex: "1" }}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="error"
+                        name="removeFilterOne"
+                        style={{ fontSize: 12 }}
+                        onClick={(e) => handleRemoveClick(e.target.name, i)}
+                      >
+                        -
+                      </Button>
+                    </div>
+                  )}
+                </FormControlContainer>
+              );
+            })}
           </FilterSectionFlex>
           {filterTitleTwoHappen && (
             <FilterSectionFlex style={{ width: "45%" }}>
               <TextField
-                size="small"
                 variant="outlined"
-                label="Brand"
-                sx={textStyle}
-                onChange={(e) => setBrand(e.target.value)}
+                label="Option Two"
+                size="medium"
+                onChange={(e) => setFilterTitleTwo(e.target.value)}
               />
-              <Button
-                variant="outlined"
-                size="small"
-                sx={textStyle}
-                style={{ marginRight: "10px" }}
-              >
-                add filter two({`${1}/5`})
-              </Button>
+
+              {inputFilterTwo.map((x, i) => {
+                return (
+                  <FormControlContainer key={i}>
+                    <div style={{ flex: "100" }}>
+                      <TextField
+                        style={{ width: "100%" }}
+                        variant="outlined"
+                        label={`#${i + 1}/10`}
+                        inputProps={{ style: { fontSize: 12 } }} // font size of input text
+                        InputLabelProps={{ style: { fontSize: 12 } }} // font size of input label
+                        size="small"
+                        name="filterTwo"
+                        onChange={(e) => handleInputChange(e, i)}
+                      />
+                    </div>
+
+                    {inputFilterTwo.length - 1 === i &&
+                      inputFilterTwo.length !== 10 && (
+                        <div style={{ flex: "2" }}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            name="addFilterTwo"
+                            style={{ fontSize: 12 }}
+                            onClick={(e) => handleAddClick(e.target.name)}
+                          >
+                            add
+                          </Button>
+                        </div>
+                      )}
+                    {inputFilterTwo.length !== 1 && (
+                      <div style={{ flex: "1" }}>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          color="error"
+                          name="removeFilterTwo"
+                          style={{ fontSize: 12 }}
+                          onClick={(e) => handleRemoveClick(e.target.name, i)}
+                        >
+                          -
+                        </Button>
+                      </div>
+                    )}
+                  </FormControlContainer>
+                );
+              })}
             </FilterSectionFlex>
           )}
         </FilterSection>
+
+        <Section>
+          <Button
+            variant="outlined"
+            size="small"
+            color="primary"
+            onClick={handleGenerateTable}
+          >
+            Generate Table
+          </Button>
+        </Section>
 
         <Section style={{ height: 400 }}>
           <DataGrid
