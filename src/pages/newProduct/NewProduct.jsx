@@ -14,13 +14,14 @@ import {
   Switch,
 } from "@mui/material";
 import { Link } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 
 import { DataGrid } from "@mui/x-data-grid";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Box } from "@mui/system";
-
+import AddBoxIcon from "@mui/icons-material/AddBox";
+import DeleteIcon from "@mui/icons-material/Delete";
 const textStyle = {
   maxWidth: "300px",
   marginBottom: "5px",
@@ -91,9 +92,36 @@ const NewProduct = () => {
       setPromotion(res);
     }
   };
+  console.log(inputFilterOne);
+  const handleCellClick = (param, event) => {
+    // console.log(param);
+    // console.log(event);
+    // if (param.colIndex === 2) {
+    // event.stopPropagation();
+    // }
+  };
 
-  const handleGenerateTable = () => {
-    console.log("hello");
+  const handleRowClick = (param, event) => {
+    console.log(param);
+    // console.log(event);
+  };
+
+  const handleGenerateTable = async () => {
+    const row = [];
+
+    inputFilterOne.map((one, i) =>
+      inputFilterTwo.map((two, j) =>
+        row.push({
+          filterTitleOne: one,
+          filterTitleTwo: two,
+          price: null,
+          stock: "",
+          sku: "",
+        })
+      )
+    );
+    const res = await row.map((item, i) => (item.id = i + 1));
+    setRows(row);
   };
 
   // handle input change
@@ -162,20 +190,20 @@ const NewProduct = () => {
   };
 
   const columns = [
-    { field: "id", headerName: "ID", width: 70 },
+    { field: "id", headerName: "ID", width: 50 },
     {
       field: "filterTitleOne",
-      headerName: "filter1",
-      width: 150,
+      headerName: filterTitleOne,
+      width: 120,
     },
     {
       field: "filterTitleTwo",
-      headerName: "filter2",
-      width: 150,
+      headerName: filterTitleTwo,
+      width: 120,
     },
-    { field: "sku", headerName: "sku", width: 130, editable: true },
     { field: "price", headerName: "price($)", width: 100, editable: true },
     { field: "stock", headerName: "stock", width: 100, editable: true },
+    { field: "sku", headerName: "sku", width: 130, editable: true },
   ];
   // useEffect(() => {
   //   setRows([{ id: 1, filterTitleOne: "", filterTitleTwo: "", sku: "" }]);
@@ -382,33 +410,21 @@ const NewProduct = () => {
                       onChange={(e) => handleInputChange(e, i)}
                     />
                   </div>
-
                   {inputFilterOne.length - 1 === i &&
                     inputFilterOne.length !== 10 && (
                       <div style={{ flex: "2" }}>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          name="addFilterOne"
-                          style={{ fontSize: 12 }}
-                          onClick={(e) => handleAddClick(e.target.name)}
-                        >
-                          add
-                        </Button>
+                        <AddBoxIcon
+                          color="primary"
+                          onClick={() => handleAddClick("addFilterOne")}
+                        ></AddBoxIcon>
                       </div>
                     )}
                   {inputFilterOne.length !== 1 && (
                     <div style={{ flex: "1" }}>
-                      <Button
-                        variant="outlined"
-                        size="small"
+                      <DeleteIcon
                         color="error"
-                        name="removeFilterOne"
-                        style={{ fontSize: 12 }}
-                        onClick={(e) => handleRemoveClick(e.target.name, i)}
-                      >
-                        -
-                      </Button>
+                        onClick={(e) => handleRemoveClick("removeFilterOne", i)}
+                      ></DeleteIcon>
                     </div>
                   )}
                 </FormControlContainer>
@@ -443,29 +459,20 @@ const NewProduct = () => {
                     {inputFilterTwo.length - 1 === i &&
                       inputFilterTwo.length !== 10 && (
                         <div style={{ flex: "2" }}>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            name="addFilterTwo"
-                            style={{ fontSize: 12 }}
-                            onClick={(e) => handleAddClick(e.target.name)}
-                          >
-                            add
-                          </Button>
+                          <AddBoxIcon
+                            color="primary"
+                            onClick={() => handleAddClick("addFilterTwo")}
+                          ></AddBoxIcon>
                         </div>
                       )}
                     {inputFilterTwo.length !== 1 && (
                       <div style={{ flex: "1" }}>
-                        <Button
-                          variant="outlined"
-                          size="small"
+                        <DeleteIcon
                           color="error"
-                          name="removeFilterTwo"
-                          style={{ fontSize: 12 }}
-                          onClick={(e) => handleRemoveClick(e.target.name, i)}
-                        >
-                          -
-                        </Button>
+                          onClick={(e) =>
+                            handleRemoveClick("removeFilterTwo", i)
+                          }
+                        ></DeleteIcon>
                       </div>
                     )}
                   </FormControlContainer>
@@ -487,12 +494,14 @@ const NewProduct = () => {
         </Section>
 
         <Section style={{ height: 400 }}>
-          <DataGrid
-            rows={rows}
-            columns={columns}
-            pageSize={5}
-            rowsPerPageOptions={[5]}
-          />
+          {/* <Table>
+            <Tr>
+              <Td></Td>
+              <Td></Td>
+              <Td></Td>
+              <Td></Td>
+            </Tr>
+          </Table> */}
         </Section>
 
         <Button
