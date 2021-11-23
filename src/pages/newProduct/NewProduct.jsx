@@ -12,6 +12,7 @@ import {
   Checkbox,
   FormHelperText,
   Switch,
+  Input,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
@@ -22,6 +23,8 @@ import axios from "axios";
 import { Box } from "@mui/system";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { userRequest } from "../../requestMethods";
+
 const textStyle = {
   maxWidth: "300px",
   marginBottom: "5px",
@@ -32,14 +35,51 @@ const Container = styled.div`
   margin-bottom: 30px;
   margin-right: 20px;
 `;
-const Form = styled.div`
+const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
-const TextTitle = styled.h2``;
+const TextTitle = styled.h1`
+  margin-bottom: 10px;
+`;
 
 const Text = styled.p``;
+const UploadContainer = styled.form`
+  margin-bottom: 10px;
+`;
+const UploadButton = styled.input``;
+const ImagePreview = styled.img`
+  width: 50px;
+  height: 50px;
+`;
+const Form = styled.form``;
+
+const Header = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+`;
+
+const Body = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+`;
+
+const BodyInput = styled.input`
+  flex: 1;
+`;
+const BodyText = styled.p`
+  flex: 1;
+`;
+
+const headerStyles = {
+  flex: 1,
+  backgroundColor: "#aeffbe",
+};
+
 const Textarea = styled.textarea``;
+
 const Section = styled.section`
   margin-bottom: 10px;
 `;
@@ -72,7 +112,8 @@ const NewProduct = () => {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [categories, setCategrories] = useState("");
-  const [img, setImg] = useState("");
+  const [file, setFile] = useState({});
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [ceilPrice, setCeilPrice] = useState("");
   const [floorPrice, setFloorPrice] = useState("");
   const [brand, setBrand] = useState("");
@@ -83,6 +124,46 @@ const NewProduct = () => {
 
   const [inputFilterOne, setInputFilterOne] = useState([""]);
   const [inputFilterTwo, setInputFilterTwo] = useState([""]);
+  console.log(file);
+  const handleUploadImage = (e) => {
+    const file = e.target.files[0];
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFile(file);
+      setImagePreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleClickUpload = async () => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const uploadImg = await userRequest.post(
+        "http://localhost:8080/product/img",
+
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRows = (e) => {
+    const list = [...rows];
+    const index = rows.findIndex((row) => row.id === e.id);
+    e.name === "price"
+      ? (list[index].price = e.value)
+      : (list[index].stock = e.value);
+    setRows(list);
+  };
 
   const handlePromotion = (e) => {
     if (e.target.checked === true) {
@@ -91,19 +172,6 @@ const NewProduct = () => {
       const res = promotion.filter((item) => item !== e.target.name);
       setPromotion(res);
     }
-  };
-  console.log(inputFilterOne);
-  const handleCellClick = (param, event) => {
-    // console.log(param);
-    // console.log(event);
-    // if (param.colIndex === 2) {
-    // event.stopPropagation();
-    // }
-  };
-
-  const handleRowClick = (param, event) => {
-    console.log(param);
-    // console.log(event);
   };
 
   const handleGenerateTable = async () => {
@@ -115,12 +183,11 @@ const NewProduct = () => {
           filterTitleOne: one,
           filterTitleTwo: two,
           price: null,
-          stock: "",
-          sku: "",
+          stock: null,
         })
       )
     );
-    const res = await row.map((item, i) => (item.id = i + 1));
+    const res = await row.map((item, i) => (item.id = i));
     setRows(row);
   };
 
@@ -163,13 +230,14 @@ const NewProduct = () => {
   const handleClearFilter = () => {
     setInputFilterOne([inputFilterOne[0]]);
     setInputFilterTwo([inputFilterTwo[0]]);
+    setRows([rows[0]]);
   };
-
   // const handleCategories = (e) => {
   //   setCategories(e.target.value);
   // };
-  const handleSubmit = () => {
-    console.log("submit");
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(e.target[1]);
     // try {
     //   const res = await axios.post("http://localhost:8080/auth/register", {
     //     username: data.username,
@@ -203,7 +271,6 @@ const NewProduct = () => {
     },
     { field: "price", headerName: "price($)", width: 100, editable: true },
     { field: "stock", headerName: "stock", width: 100, editable: true },
-    { field: "sku", headerName: "sku", width: 130, editable: true },
   ];
   // useEffect(() => {
   //   setRows([{ id: 1, filterTitleOne: "", filterTitleTwo: "", sku: "" }]);
@@ -212,7 +279,7 @@ const NewProduct = () => {
   return (
     <Container>
       <TextTitle>New Product</TextTitle>
-      <Form>
+      <Wrapper>
         <Section>
           <TextField
             size="small"
@@ -249,14 +316,20 @@ const NewProduct = () => {
           </fieldset>
         </Section>
 
-        <Section>
+        <UploadContainer>
           <InputImg
             type="file"
-            name="img"
+            name="file"
             accept="image/*"
-            onChange={(e) => setImg(e.target.value)}
+            onChange={handleUploadImage}
           />
-        </Section>
+          <UploadButton
+            type="button"
+            value="Upload"
+            onClick={() => handleClickUpload()}
+          />
+          {imagePreviewUrl && <ImagePreview src={imagePreviewUrl} />}
+        </UploadContainer>
 
         <Section>
           <FormControl fullWidth>
@@ -493,26 +566,93 @@ const NewProduct = () => {
           </Button>
         </Section>
 
-        <Section style={{ height: 400 }}>
-          {/* <Table>
-            <Tr>
-              <Td></Td>
-              <Td></Td>
-              <Td></Td>
-              <Td></Td>
-            </Tr>
-          </Table> */}
-        </Section>
+        <Section>
+          <Form onSubmit={handleSubmit}>
+            <Header>
+              <TextField
+                style={headerStyles}
+                disabled
+                color="secondary"
+                size="small"
+                value={filterTitleOne}
+              />
+              {filterTitleTwoHappen && (
+                <TextField
+                  style={headerStyles}
+                  disabled
+                  color="secondary"
+                  size="small"
+                  value={filterTitleTwo}
+                />
+              )}
+              <TextField
+                style={headerStyles}
+                disabled
+                color="secondary"
+                size="small"
+                value="price($)"
+              />
+              <TextField
+                style={headerStyles}
+                disabled
+                color="secondary"
+                size="small"
+                value="stock"
+              />
+            </Header>
+            {rows.map((item, i) => (
+              <Body key={i}>
+                <TextField
+                  disabled
+                  variant="outlined"
+                  size="small"
+                  value={item.filterTitleOne}
+                ></TextField>
 
-        <Button
-          variant="contained"
-          type="submit"
-          sx={{ width: 100 }}
-          onClick={handleSubmit}
-        >
-          SUBMIT
-        </Button>
-      </Form>
+                {filterTitleTwoHappen && (
+                  <TextField
+                    disabled
+                    variant="outlined"
+                    size="small"
+                    value={item.filterTitleTwo}
+                  ></TextField>
+                )}
+                <TextField
+                  type="number"
+                  variant="outlined"
+                  size="small"
+                  name="price"
+                  placeholder="fill here.."
+                  onChange={(e) =>
+                    handleRows({
+                      name: e.target.name,
+                      value: e.target.value,
+                      id: i,
+                    })
+                  }
+                ></TextField>
+                <TextField
+                  type="number"
+                  variant="outlined"
+                  size="small"
+                  name="stock"
+                  placeholder="fill here.."
+                  onChange={(e) =>
+                    handleRows({
+                      name: e.target.name,
+                      value: e.target.value,
+                      id: i,
+                    })
+                  }
+                ></TextField>
+              </Body>
+            ))}
+            <Button variant="contained" type="submit" sx={{ width: 100 }}>
+              SUBMIT
+            </Button>
+          </Form>
+        </Section>
+      </Wrapper>
     </Container>
   );
 };
