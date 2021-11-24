@@ -13,15 +13,16 @@ import {
   FormHelperText,
   Switch,
 } from "@mui/material";
-import { Link } from "react-router-dom";
-import { useForm, Controller, useFieldArray } from "react-hook-form";
-
-import { DataGrid } from "@mui/x-data-grid";
-import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import { useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
 import { Box } from "@mui/system";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { userRequest } from "../../requestMethods";
+import { useLocation } from "react-router-dom";
+import { updateProduct } from "../../redux/apiCalls";
+import { useDispatch } from "react-redux";
+
 const textStyle = {
   maxWidth: "300px",
   marginBottom: "5px",
@@ -32,23 +33,41 @@ const Container = styled.div`
   margin-bottom: 30px;
   margin-right: 20px;
 `;
-const Form = styled.div`
+const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
-const TextTitle = styled.h2``;
-
-const Text = styled.p``;
-
-const Table = styled.table``;
-
-const Td = styled.td``;
-
-const Tr = styled.tr`
+const TextTitle = styled.h1`
   margin-bottom: 10px;
 `;
 
-const TableInput = styled.input``;
+const Text = styled.p``;
+const UploadContainer = styled.form`
+  margin-bottom: 10px;
+`;
+const UploadButton = styled.input``;
+const ImagePreview = styled.img`
+  width: 50px;
+  height: 50px;
+`;
+const Form = styled.form``;
+
+const Header = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+`;
+
+const Body = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+`;
+
+const headerStyles = {
+  flex: 1,
+  backgroundColor: "#ededed",
+};
 
 const Textarea = styled.textarea``;
 
@@ -77,24 +96,163 @@ const FilterSectionFlex = styled.section`
 
 const InputImg = styled.input``;
 
-const NewProduct = () => {
-  // const [categories, setCategories] = useState("");
+const UpdateProduct = () => {
   const [promotion, setPromotion] = useState([]);
   const [rows, setRows] = useState([]);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [categories, setCategrories] = useState("");
+  const [file, setFile] = useState({});
   const [img, setImg] = useState("");
-  const [ceilPrice, setCeilPrice] = useState("");
-  const [floorPrice, setFloorPrice] = useState("");
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [brand, setBrand] = useState("");
   const [condition, setCondition] = useState("");
   const [filterTitleOne, setFilterTitleOne] = useState("");
   const [filterTitleTwo, setFilterTitleTwo] = useState("");
   const [filterTitleTwoHappen, setFilterTitleTwoHappen] = useState(false);
-
   const [inputFilterOne, setInputFilterOne] = useState([""]);
   const [inputFilterTwo, setInputFilterTwo] = useState([""]);
+
+  const location = useLocation();
+  const _id = location.pathname.split("/")[2];
+  const products = useSelector((state) => state?.product?.products);
+  const product = products.find((item) => item._id === _id);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    try {
+      setImg(product.img);
+      setPromotion(product.promotion);
+      setTitle(product.title);
+      setDesc(product.desc);
+      setBrand(product.brand);
+      setCategrories(product.categories);
+      setCondition(product.condition);
+      setFilterTitleOne(product.filterTitleOne);
+      if (product.filterTitleTwo) {
+        setFilterTitleTwoHappen(true);
+        setFilterTitleTwo(product.filterTitleTwo);
+        const arrOne = [];
+        product.product.map((item) => arrOne.push(item.filterProductsOne));
+        setInputFilterOne([...new Set(arrOne)]);
+        const arrTwo = [];
+        product.product.map((item) => arrTwo.push(item.filterProductsTwo));
+        setInputFilterTwo([...new Set(arrTwo)]);
+      } else {
+        const arrOne = [];
+        product.product.map((item) => arrOne.push(item.filterProductsOne));
+        setInputFilterOne([...new Set(arrOne)]);
+      }
+      setRows(product.product);
+      setTitle(product.title);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [product]);
+  console.log(img);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const arr = [];
+    rows.map((item) => arr.push(item.price));
+    try {
+      if (filterTitleTwoHappen) {
+        const res = await updateProduct(
+          _id,
+          {
+            title: title,
+            desc: desc,
+            img: img,
+            categories: categories,
+            brand: brand,
+            filterTitleOne: filterTitleOne,
+            promotion: promotion,
+            condition: condition,
+            filterTitleTwo: filterTitleTwo,
+            floorPrice: Math.min(...arr),
+            ceilPrice: Math.max(...arr),
+            product: rows,
+          },
+          dispatch
+        );
+      } else {
+        const res = await updateProduct(
+          _id,
+          {
+            title: title,
+            desc: desc,
+            img: img,
+            categories: categories,
+            brand: brand,
+            filterTitleOne: filterTitleOne,
+            promotion: promotion,
+            condition: condition,
+            floorPrice: Math.min(...arr),
+            ceilPrice: Math.max(...arr),
+            product: rows,
+          },
+          dispatch
+        );
+      }
+      alert("update product successfully!");
+    } catch (err) {
+      if (err.response.status === 400) {
+        alert(err.response.data);
+      } else {
+        console.error(err);
+        alert("something went wrong..");
+      }
+    }
+  };
+
+  const isChecked = (e) => {
+    if (product?.promotion?.find((item) => item === e.name)) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const handleUploadImage = (e) => {
+    const file = e.target.files[0];
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFile(file);
+      setImagePreviewUrl(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleClickUpload = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const uploadImg = await userRequest.post(
+        "http://localhost:8080/product/img",
+
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setImg(uploadImg.data.filename);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRows = (e) => {
+    const list = [...rows];
+    const index = rows.findIndex((row) => row.id === e.id);
+    e.name === "price"
+      ? (list[index].price = e.value)
+      : (list[index].stock = e.value);
+    setRows(list);
+  };
 
   const handlePromotion = (e) => {
     if (e.target.checked === true) {
@@ -104,19 +262,6 @@ const NewProduct = () => {
       setPromotion(res);
     }
   };
-  console.log(inputFilterOne);
-  const handleCellClick = (param, event) => {
-    // console.log(param);
-    // console.log(event);
-    // if (param.colIndex === 2) {
-    // event.stopPropagation();
-    // }
-  };
-
-  const handleRowClick = (param, event) => {
-    console.log(param);
-    // console.log(event);
-  };
 
   const handleGenerateTable = async () => {
     const row = [];
@@ -124,15 +269,14 @@ const NewProduct = () => {
     inputFilterOne.map((one, i) =>
       inputFilterTwo.map((two, j) =>
         row.push({
-          filterTitleOne: one,
-          filterTitleTwo: two,
+          filterProductsOne: one,
+          filterProductsTwo: two,
           price: null,
-          stock: "",
-          sku: "",
+          stock: null,
         })
       )
     );
-    const res = await row.map((item, i) => (item.id = i + 1));
+    const res = await row.map((item, i) => (item.id = i));
     setRows(row);
   };
 
@@ -174,65 +318,23 @@ const NewProduct = () => {
 
   const handleClearFilter = () => {
     setInputFilterOne([inputFilterOne[0]]);
-    setInputFilterTwo([inputFilterTwo[0]]);
+    setInputFilterTwo("");
+    setRows([]);
   };
-
-  // const handleCategories = (e) => {
-  //   setCategories(e.target.value);
-  // };
-  const handleSubmit = () => {
-    console.log("submit");
-    // try {
-    //   const res = await axios.post("http://localhost:8080/auth/register", {
-    //     username: data.username,
-    //     password: data.password,
-    //     email: data.email,
-    //     title: data.title,
-    //     lastname: data.lastname,
-    //   });
-    //   window.location = "/register/success";
-    // } catch (err) {
-    //   if (err.response.status === 400) {
-    //     alert(err.response.data);
-    //   } else {
-    //     console.error(err);
-    //     alert("something went wrong..");
-    //   }
-    // }
-  };
-
-  const columns = [
-    { field: "id", headerName: "ID", width: 50 },
-    {
-      field: "filterTitleOne",
-      headerName: filterTitleOne,
-      width: 120,
-    },
-    {
-      field: "filterTitleTwo",
-      headerName: filterTitleTwo,
-      width: 120,
-    },
-    { field: "price", headerName: "price($)", width: 100, editable: true },
-    { field: "stock", headerName: "stock", width: 100, editable: true },
-    { field: "sku", headerName: "sku", width: 130, editable: true },
-  ];
-  // useEffect(() => {
-  //   setRows([{ id: 1, filterTitleOne: "", filterTitleTwo: "", sku: "" }]);
-  // }, []);
 
   return (
     <Container>
-      <TextTitle>New Product</TextTitle>
-      <Form>
+      <TextTitle>Update Product</TextTitle>
+      <Wrapper>
         <Section>
           <TextField
             size="small"
             id="title"
             variant="outlined"
             label="Title"
-            sx={textStyle}
+            sx={{ mb: 1, width: 600 }}
             required
+            defaultValue={product?.title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </Section>
@@ -244,6 +346,7 @@ const NewProduct = () => {
             variant="outlined"
             label="Brand"
             sx={textStyle}
+            defaultValue={product?.brand}
             onChange={(e) => setBrand(e.target.value)}
           />
         </Section>
@@ -254,6 +357,7 @@ const NewProduct = () => {
               <Text>description*</Text>
             </legend>
             <Textarea
+              defaultValue={product?.desc}
               style={{ width: 500, border: "none", minHeight: "100px" }}
               placeholder="it can contain up to 500 characters.."
               onChange={(e) => setDesc(e.target.value)}
@@ -261,14 +365,28 @@ const NewProduct = () => {
           </fieldset>
         </Section>
 
-        <Section>
+        <UploadContainer>
           <InputImg
             type="file"
-            name="img"
+            name="file"
             accept="image/*"
-            onChange={(e) => setImg(e.target.value)}
+            onChange={handleUploadImage}
           />
-        </Section>
+          {!img && (
+            <UploadButton
+              type="button"
+              value="upload"
+              onClick={(e) => {
+                handleClickUpload(e);
+              }}
+            />
+          )}
+          {imagePreviewUrl ? (
+            <ImagePreview src={imagePreviewUrl} />
+          ) : (
+            <ImagePreview src={product?.img} />
+          )}
+        </UploadContainer>
 
         <Section>
           <FormControl fullWidth>
@@ -281,9 +399,12 @@ const NewProduct = () => {
               label="Categories*"
               onChange={(e) => setCategrories(e.target.value)}
             >
-              <MenuItem value="Shirt">Shirt</MenuItem>
-              <MenuItem value="Plain">Plain</MenuItem>
-              <MenuItem value="Women">Women</MenuItem>
+              <MenuItem value="shirt">Shirt</MenuItem>
+              <MenuItem value="plain">Plain</MenuItem>
+              <MenuItem value="women">Women</MenuItem>
+              <MenuItem value="snack">Snack</MenuItem>
+              <MenuItem value="electronics">Electronics</MenuItem>
+              <MenuItem value="shoes">Shoes</MenuItem>
             </Select>
           </FormControl>
         </Section>
@@ -301,6 +422,7 @@ const NewProduct = () => {
               label="Condition*"
               onChange={(e) => setCondition(e.target.value)}
             >
+              {console.log(product)}
               <MenuItem value="New">New</MenuItem>
               <MenuItem value="Used">Used</MenuItem>
             </Select>
@@ -318,6 +440,7 @@ const NewProduct = () => {
                       size="small"
                       onChange={handlePromotion}
                       name="ร้านค้าแนะนำ"
+                      defaultChecked={isChecked({ name: "ร้านค้าแนะนำ" })}
                     />
                   }
                   label="ร้านค้าแนะนำ"
@@ -328,6 +451,7 @@ const NewProduct = () => {
                       size="small"
                       onChange={handlePromotion}
                       name="exclusive price"
+                      defaultChecked={isChecked({ name: "exclusive price" })}
                     />
                   }
                   label="exclusive price"
@@ -338,6 +462,7 @@ const NewProduct = () => {
                       size="small"
                       onChange={handlePromotion}
                       name="only9.9$"
+                      defaultChecked={isChecked({ name: "only9.9$" })}
                     />
                   }
                   label="only9.9$"
@@ -348,6 +473,7 @@ const NewProduct = () => {
                       size="small"
                       onChange={handlePromotion}
                       name="10%cashback"
+                      defaultChecked={isChecked({ name: "10%cashback" })}
                     />
                   }
                   label="10%cashback"
@@ -358,6 +484,7 @@ const NewProduct = () => {
                       size="small"
                       onChange={handlePromotion}
                       name="9.9$free shipping"
+                      defaultChecked={isChecked({ name: "9.9$free shipping" })}
                     />
                   }
                   label="9.9$free shipping"
@@ -402,6 +529,7 @@ const NewProduct = () => {
               variant="outlined"
               label="Option One"
               size="medium"
+              defaultValue={product?.filterTitleOne}
               onChange={(e) => setFilterTitleOne(e.target.value)}
             />
 
@@ -410,6 +538,7 @@ const NewProduct = () => {
                 <FormControlContainer key={i}>
                   <div style={{ flex: "100" }}>
                     <TextField
+                      defaultValue={x}
                       style={{ width: "100%" }}
                       variant="outlined"
                       label={`#${i + 1}/10`}
@@ -427,6 +556,7 @@ const NewProduct = () => {
                       <div style={{ flex: "2" }}>
                         <AddBoxIcon
                           color="primary"
+                          style={{ cursor: "pointer" }}
                           onClick={() => handleAddClick("addFilterOne")}
                         ></AddBoxIcon>
                       </div>
@@ -435,6 +565,7 @@ const NewProduct = () => {
                     <div style={{ flex: "1" }}>
                       <DeleteIcon
                         color="error"
+                        style={{ cursor: "pointer" }}
                         onClick={(e) => handleRemoveClick("removeFilterOne", i)}
                       ></DeleteIcon>
                     </div>
@@ -449,6 +580,7 @@ const NewProduct = () => {
                 variant="outlined"
                 label="Option Two"
                 size="medium"
+                defaultValue={product?.filterTitleTwo}
                 onChange={(e) => setFilterTitleTwo(e.target.value)}
               />
 
@@ -457,11 +589,14 @@ const NewProduct = () => {
                   <FormControlContainer key={i}>
                     <div style={{ flex: "100" }}>
                       <TextField
+                        defaultValue={x}
                         style={{ width: "100%" }}
                         variant="outlined"
                         label={`#${i + 1}/10`}
                         inputProps={{ style: { fontSize: 12 } }} // font size of input text
-                        InputLabelProps={{ style: { fontSize: 12 } }} // font size of input label
+                        InputLabelProps={{
+                          style: { fontSize: 12, color: "#889aff" },
+                        }}
                         size="small"
                         name="filterTwo"
                         onChange={(e) => handleInputChange(e, i)}
@@ -473,6 +608,7 @@ const NewProduct = () => {
                         <div style={{ flex: "2" }}>
                           <AddBoxIcon
                             color="primary"
+                            style={{ cursor: "pointer" }}
                             onClick={() => handleAddClick("addFilterTwo")}
                           ></AddBoxIcon>
                         </div>
@@ -480,6 +616,7 @@ const NewProduct = () => {
                     {inputFilterTwo.length !== 1 && (
                       <div style={{ flex: "1" }}>
                         <DeleteIcon
+                          style={{ cursor: "pointer" }}
                           color="error"
                           onClick={(e) =>
                             handleRemoveClick("removeFilterTwo", i)
@@ -505,41 +642,101 @@ const NewProduct = () => {
           </Button>
         </Section>
 
-        <Section style={{ height: 400 }}>
-          <Table>
-            <Tr>
-              <Td>{filterTitleOne}</Td>
-              <Td>price</Td>
-              <Td>stock</Td>
-            </Tr>
-            <Tr>
-              <Td>
-                <TableInput />
-              </Td>
-              <Td>
-                <TableInput />
-              </Td>
-              <Td>
-                <TableInput />
-              </Td>
-              <Td>
-                <TableInput />
-              </Td>
-            </Tr>
-          </Table>
-        </Section>
+        <Section>
+          <Form
+            onSubmit={(e) => {
+              handleSubmit(e);
+            }}
+          >
+            <Header>
+              <TextField
+                style={headerStyles}
+                disabled
+                color="secondary"
+                size="small"
+                value={filterTitleOne}
+              />
+              {filterTitleTwoHappen && (
+                <TextField
+                  style={headerStyles}
+                  disabled
+                  color="secondary"
+                  size="small"
+                  value={filterTitleTwo}
+                />
+              )}
+              <TextField
+                style={headerStyles}
+                disabled
+                color="secondary"
+                size="small"
+                value="price($)"
+              />
+              <TextField
+                style={headerStyles}
+                disabled
+                color="secondary"
+                size="small"
+                value="stock"
+              />
+            </Header>
+            {rows.map((item, i) => (
+              <Body key={i}>
+                <TextField
+                  disabled
+                  variant="outlined"
+                  size="small"
+                  value={item.filterProductsOne}
+                ></TextField>
 
-        <Button
-          variant="contained"
-          type="submit"
-          sx={{ width: 100 }}
-          onClick={handleSubmit}
-        >
-          SUBMIT
-        </Button>
-      </Form>
+                {filterTitleTwoHappen && (
+                  <TextField
+                    disabled
+                    variant="outlined"
+                    size="small"
+                    value={item.filterProductsTwo}
+                  ></TextField>
+                )}
+                <TextField
+                  type="number"
+                  variant="outlined"
+                  size="small"
+                  name="price"
+                  defaultValue={item.price}
+                  placeholder="fill here.."
+                  onChange={(e) =>
+                    handleRows({
+                      name: e.target.name,
+                      value: e.target.value,
+                      id: i,
+                    })
+                  }
+                ></TextField>
+                <TextField
+                  type="number"
+                  variant="outlined"
+                  size="small"
+                  name="stock"
+                  defaultValue={item.stock}
+                  placeholder="fill here.."
+                  onChange={(e) =>
+                    handleRows({
+                      name: e.target.name,
+                      value: e.target.value,
+                      id: i,
+                    })
+                  }
+                ></TextField>
+              </Body>
+            ))}
+            <Button variant="contained" type="submit" sx={{ width: 100 }}>
+              UPDATE
+            </Button>
+          </Form>
+        </Section>
+      </Wrapper>
     </Container>
   );
 };
 
-export default NewProduct;
+export default UpdateProduct;

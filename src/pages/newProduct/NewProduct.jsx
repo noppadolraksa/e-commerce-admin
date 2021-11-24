@@ -12,14 +12,9 @@ import {
   Checkbox,
   FormHelperText,
   Switch,
-  Input,
 } from "@mui/material";
-import { Link } from "react-router-dom";
-import { useForm, Controller, useFieldArray } from "react-hook-form";
 
-import { DataGrid } from "@mui/x-data-grid";
-import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { Box } from "@mui/system";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -66,16 +61,9 @@ const Body = styled.div`
   justify-content: space-around;
 `;
 
-const BodyInput = styled.input`
-  flex: 1;
-`;
-const BodyText = styled.p`
-  flex: 1;
-`;
-
 const headerStyles = {
   flex: 1,
-  backgroundColor: "#aeffbe",
+  backgroundColor: "#ededed",
 };
 
 const Textarea = styled.textarea``;
@@ -106,16 +94,15 @@ const FilterSectionFlex = styled.section`
 const InputImg = styled.input``;
 
 const NewProduct = () => {
-  // const [categories, setCategories] = useState("");
   const [promotion, setPromotion] = useState([]);
   const [rows, setRows] = useState([]);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [categories, setCategrories] = useState("");
   const [file, setFile] = useState({});
+  const [img, setImg] = useState("");
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
-  const [ceilPrice, setCeilPrice] = useState("");
-  const [floorPrice, setFloorPrice] = useState("");
+
   const [brand, setBrand] = useState("");
   const [condition, setCondition] = useState("");
   const [filterTitleOne, setFilterTitleOne] = useState("");
@@ -124,7 +111,53 @@ const NewProduct = () => {
 
   const [inputFilterOne, setInputFilterOne] = useState([""]);
   const [inputFilterTwo, setInputFilterTwo] = useState([""]);
-  console.log(file);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const arr = [];
+    rows.map((item) => arr.push(item.price));
+    try {
+      if (filterTitleTwoHappen) {
+        const res = await userRequest.post("http://localhost:8080/product/", {
+          title: title,
+          desc: desc,
+          img: img,
+          categories: categories,
+          brand: brand,
+          filterTitleOne: filterTitleOne,
+          promotion: promotion,
+          condition: condition,
+          filterTitleTwo: filterTitleTwo,
+          floorPrice: Math.min(...arr),
+          ceilPrice: Math.max(...arr),
+          product: rows,
+        });
+      } else {
+        const res = await userRequest.post("http://localhost:8080/product/", {
+          title: title,
+          desc: desc,
+          img: img,
+          categories: categories,
+          brand: brand,
+          filterTitleOne: filterTitleOne,
+          promotion: promotion,
+          condition: condition,
+          floorPrice: Math.min(...arr),
+          ceilPrice: Math.max(...arr),
+          product: rows,
+        });
+      }
+      alert("create product successfully!");
+    } catch (err) {
+      if (err.response.status === 400) {
+        alert(err.response.data);
+      } else {
+        console.error(err);
+        alert("something went wrong..");
+      }
+    }
+  };
+
   const handleUploadImage = (e) => {
     const file = e.target.files[0];
 
@@ -136,7 +169,8 @@ const NewProduct = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleClickUpload = async () => {
+  const handleClickUpload = async (e) => {
+    e.preventDefault();
     const formData = new FormData();
     formData.append("file", file);
 
@@ -151,6 +185,7 @@ const NewProduct = () => {
           },
         }
       );
+      setImg(`http://localhost:8080/product/file/${uploadImg.data.filename}`);
     } catch (err) {
       console.error(err);
     }
@@ -180,8 +215,8 @@ const NewProduct = () => {
     inputFilterOne.map((one, i) =>
       inputFilterTwo.map((two, j) =>
         row.push({
-          filterTitleOne: one,
-          filterTitleTwo: two,
+          filterProductsOne: one,
+          filterProductsTwo: two,
           price: null,
           stock: null,
         })
@@ -229,52 +264,9 @@ const NewProduct = () => {
 
   const handleClearFilter = () => {
     setInputFilterOne([inputFilterOne[0]]);
-    setInputFilterTwo([inputFilterTwo[0]]);
-    setRows([rows[0]]);
+    setInputFilterTwo("");
+    setRows([]);
   };
-  // const handleCategories = (e) => {
-  //   setCategories(e.target.value);
-  // };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(e.target[1]);
-    // try {
-    //   const res = await axios.post("http://localhost:8080/auth/register", {
-    //     username: data.username,
-    //     password: data.password,
-    //     email: data.email,
-    //     title: data.title,
-    //     lastname: data.lastname,
-    //   });
-    //   window.location = "/register/success";
-    // } catch (err) {
-    //   if (err.response.status === 400) {
-    //     alert(err.response.data);
-    //   } else {
-    //     console.error(err);
-    //     alert("something went wrong..");
-    //   }
-    // }
-  };
-
-  const columns = [
-    { field: "id", headerName: "ID", width: 50 },
-    {
-      field: "filterTitleOne",
-      headerName: filterTitleOne,
-      width: 120,
-    },
-    {
-      field: "filterTitleTwo",
-      headerName: filterTitleTwo,
-      width: 120,
-    },
-    { field: "price", headerName: "price($)", width: 100, editable: true },
-    { field: "stock", headerName: "stock", width: 100, editable: true },
-  ];
-  // useEffect(() => {
-  //   setRows([{ id: 1, filterTitleOne: "", filterTitleTwo: "", sku: "" }]);
-  // }, []);
 
   return (
     <Container>
@@ -286,7 +278,7 @@ const NewProduct = () => {
             id="title"
             variant="outlined"
             label="Title"
-            sx={textStyle}
+            sx={{ mb: 1, width: 600 }}
             required
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -323,11 +315,15 @@ const NewProduct = () => {
             accept="image/*"
             onChange={handleUploadImage}
           />
-          <UploadButton
-            type="button"
-            value="Upload"
-            onClick={() => handleClickUpload()}
-          />
+          {!img && (
+            <UploadButton
+              type="button"
+              value="upload"
+              onClick={(e) => {
+                handleClickUpload(e);
+              }}
+            />
+          )}
           {imagePreviewUrl && <ImagePreview src={imagePreviewUrl} />}
         </UploadContainer>
 
@@ -342,9 +338,12 @@ const NewProduct = () => {
               label="Categories*"
               onChange={(e) => setCategrories(e.target.value)}
             >
-              <MenuItem value="Shirt">Shirt</MenuItem>
-              <MenuItem value="Plain">Plain</MenuItem>
-              <MenuItem value="Women">Women</MenuItem>
+              <MenuItem value="shirt">Shirt</MenuItem>
+              <MenuItem value="plain">Plain</MenuItem>
+              <MenuItem value="women">Women</MenuItem>
+              <MenuItem value="snack">Snack</MenuItem>
+              <MenuItem value="electronics">Electronics</MenuItem>
+              <MenuItem value="shoes">Shoes</MenuItem>
             </Select>
           </FormControl>
         </Section>
@@ -488,6 +487,7 @@ const NewProduct = () => {
                       <div style={{ flex: "2" }}>
                         <AddBoxIcon
                           color="primary"
+                          style={{ cursor: "pointer" }}
                           onClick={() => handleAddClick("addFilterOne")}
                         ></AddBoxIcon>
                       </div>
@@ -495,6 +495,7 @@ const NewProduct = () => {
                   {inputFilterOne.length !== 1 && (
                     <div style={{ flex: "1" }}>
                       <DeleteIcon
+                        style={{ cursor: "pointer" }}
                         color="error"
                         onClick={(e) => handleRemoveClick("removeFilterOne", i)}
                       ></DeleteIcon>
@@ -522,7 +523,9 @@ const NewProduct = () => {
                         variant="outlined"
                         label={`#${i + 1}/10`}
                         inputProps={{ style: { fontSize: 12 } }} // font size of input text
-                        InputLabelProps={{ style: { fontSize: 12 } }} // font size of input label
+                        InputLabelProps={{
+                          style: { fontSize: 12, color: "#889aff" },
+                        }}
                         size="small"
                         name="filterTwo"
                         onChange={(e) => handleInputChange(e, i)}
@@ -534,6 +537,7 @@ const NewProduct = () => {
                         <div style={{ flex: "2" }}>
                           <AddBoxIcon
                             color="primary"
+                            style={{ cursor: "pointer" }}
                             onClick={() => handleAddClick("addFilterTwo")}
                           ></AddBoxIcon>
                         </div>
@@ -542,6 +546,7 @@ const NewProduct = () => {
                       <div style={{ flex: "1" }}>
                         <DeleteIcon
                           color="error"
+                          style={{ cursor: "pointer" }}
                           onClick={(e) =>
                             handleRemoveClick("removeFilterTwo", i)
                           }
@@ -567,7 +572,11 @@ const NewProduct = () => {
         </Section>
 
         <Section>
-          <Form onSubmit={handleSubmit}>
+          <Form
+            onSubmit={(e) => {
+              handleSubmit(e);
+            }}
+          >
             <Header>
               <TextField
                 style={headerStyles}
@@ -606,7 +615,7 @@ const NewProduct = () => {
                   disabled
                   variant="outlined"
                   size="small"
-                  value={item.filterTitleOne}
+                  value={item.filterProductsOne}
                 ></TextField>
 
                 {filterTitleTwoHappen && (
@@ -614,7 +623,7 @@ const NewProduct = () => {
                     disabled
                     variant="outlined"
                     size="small"
-                    value={item.filterTitleTwo}
+                    value={item.filterProductsTwo}
                   ></TextField>
                 )}
                 <TextField

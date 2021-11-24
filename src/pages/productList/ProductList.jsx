@@ -28,23 +28,21 @@ export default function ProductList() {
       renderCell: (params) => {
         return (
           <div className="productListItem">
-            <img className="productListImg" src={params.row.img} alt="" />
+            <img
+              className="productListImg"
+              src={
+                params.row.img ||
+                "https://4.bp.blogspot.com/-OCutvC4wPps/XfNnRz5PvhI/AAAAAAAAEfo/qJ8P1sqLWesMdOSiEoUH85s3hs_vn97HACLcBGAsYHQ/s1600/no-image-found-360x260.png"
+              }
+              alt=""
+            />
             {params.row.title}
           </div>
         );
       },
     },
-    { field: "inStock", headerName: "Stock", width: 200 },
-    {
-      field: "status",
-      headerName: "Status",
-      width: 120,
-    },
-    {
-      field: "price",
-      headerName: "Price",
-      width: 160,
-    },
+    { field: "inStock", headerName: "Stock", width: 100 },
+
     {
       field: "action",
       headerName: "Action",
@@ -52,7 +50,7 @@ export default function ProductList() {
       renderCell: (params) => {
         return (
           <>
-            <Link to={"/product/" + params.row.id}>
+            <Link to={"/product/" + params.row._id}>
               <button className="productListEdit">Edit</button>
             </Link>
             <DeleteOutline
@@ -67,6 +65,9 @@ export default function ProductList() {
 
   return (
     <div className="productList">
+      <Link to="/newproduct">
+        <button className="productAddButton">Create</button>
+      </Link>
       <DataGrid
         rows={products}
         disableSelectionOnClick
