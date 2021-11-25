@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from "styled-components";
 import {
   Button,
   TextField,
@@ -230,7 +230,7 @@ const UpdateProduct = () => {
 
     try {
       const uploadImg = await userRequest.post(
-        "http://localhost:8080/product/img",
+        "https://my-shop-e-commerce.herokuapp.com/product/img",
 
         formData,
         {

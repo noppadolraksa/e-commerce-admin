@@ -1,4 +1,4 @@
-import styled from "@emotion/styled";
+import styled from "styled-components";
 import {
   Button,
   TextField,
@@ -114,38 +114,45 @@ const NewProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const arr = [];
     rows.map((item) => arr.push(item.price));
     try {
       if (filterTitleTwoHappen) {
-        const res = await userRequest.post("http://localhost:8080/product/", {
-          title: title,
-          desc: desc,
-          img: img,
-          categories: categories,
-          brand: brand,
-          filterTitleOne: filterTitleOne,
-          promotion: promotion,
-          condition: condition,
-          filterTitleTwo: filterTitleTwo,
-          floorPrice: Math.min(...arr),
-          ceilPrice: Math.max(...arr),
-          product: rows,
-        });
+        const res = await userRequest.post(
+          "https://my-shop-e-commerce.herokuapp.com/product/",
+          {
+            title: title,
+            desc: desc,
+            img: img,
+            categories: categories,
+            brand: brand,
+            filterTitleOne: filterTitleOne,
+            promotion: promotion,
+            condition: condition,
+            filterTitleTwo: filterTitleTwo,
+            floorPrice: Math.min(...arr),
+            ceilPrice: Math.max(...arr),
+            product: rows,
+          }
+        );
       } else {
-        const res = await userRequest.post("http://localhost:8080/product/", {
-          title: title,
-          desc: desc,
-          img: img,
-          categories: categories,
-          brand: brand,
-          filterTitleOne: filterTitleOne,
-          promotion: promotion,
-          condition: condition,
-          floorPrice: Math.min(...arr),
-          ceilPrice: Math.max(...arr),
-          product: rows,
-        });
+        const res = await userRequest.post(
+          "https://my-shop-e-commerce.herokuapp.com/product/",
+          {
+            title: title,
+            desc: desc,
+            img: img,
+            categories: categories,
+            brand: brand,
+            filterTitleOne: filterTitleOne,
+            promotion: promotion,
+            condition: condition,
+            floorPrice: Math.min(...arr),
+            ceilPrice: Math.max(...arr),
+            product: rows,
+          }
+        );
       }
       alert("create product successfully!");
     } catch (err) {
@@ -176,7 +183,7 @@ const NewProduct = () => {
 
     try {
       const uploadImg = await userRequest.post(
-        "http://localhost:8080/product/img",
+        "https://my-shop-e-commerce.herokuapp.com/product/img",
 
         formData,
         {
@@ -185,7 +192,9 @@ const NewProduct = () => {
           },
         }
       );
-      setImg(`http://localhost:8080/product/file/${uploadImg.data.filename}`);
+      setImg(
+        `https://my-shop-e-commerce.herokuapp.com/product/file/${uploadImg.data.filename}`
+      );
     } catch (err) {
       console.error(err);
     }
