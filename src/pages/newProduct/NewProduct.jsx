@@ -13,12 +13,19 @@ import {
   FormHelperText,
   Switch,
 } from "@mui/material";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
 
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/system";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { userRequest } from "../../requestMethods";
+import app from "../../firebase";
 
 const textStyle = {
   maxWidth: "300px",
@@ -100,7 +107,6 @@ const NewProduct = () => {
   const [desc, setDesc] = useState("");
   const [categories, setCategrories] = useState("");
   const [file, setFile] = useState({});
-  const [img, setImg] = useState("");
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
   const [brand, setBrand] = useState("");
@@ -114,55 +120,91 @@ const NewProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const fileName = new Date().getTime() + file.name;
+
+    const storage = getStorage(app);
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, file);
 
     const arr = [];
     rows.map((item) => arr.push(item.price));
-    try {
-      if (filterTitleTwoHappen) {
-        const res = await userRequest.post(
-          "https://my-shop-e-commerce.herokuapp.com/product/",
-          {
-            title: title,
-            desc: desc,
-            img: img,
-            categories: categories,
-            brand: brand,
-            filterTitleOne: filterTitleOne,
-            promotion: promotion,
-            condition: condition,
-            filterTitleTwo: filterTitleTwo,
-            floorPrice: Math.min(...arr),
-            ceilPrice: Math.max(...arr),
-            product: rows,
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        // Observe state change events such as progress, pause, and resume
+        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log("Upload is " + progress + "% done");
+        switch (snapshot.state) {
+          case "paused":
+            console.log("Upload is paused");
+            break;
+          case "running":
+            console.log("Upload is running");
+            break;
+          default:
+        }
+      },
+      (error) => {
+        // Handle unsuccessful uploads
+      },
+      () => {
+        // Handle successful uploads on complete
+        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+          try {
+            if (filterTitleTwoHappen) {
+              const res = await userRequest.post(
+                "https://my-shop-e-commerce.herokuapp.com/product/",
+                {
+                  title: title,
+                  desc: desc,
+                  img: downloadURL,
+                  categories: categories,
+                  brand: brand,
+                  filterTitleOne: filterTitleOne,
+                  promotion: promotion,
+                  condition: condition,
+                  filterTitleTwo: filterTitleTwo,
+                  floorPrice: Math.min(...arr),
+                  ceilPrice: Math.max(...arr),
+                  product: rows,
+                }
+              );
+            } else {
+              const res = await userRequest.post(
+                "https://my-shop-e-commerce.herokuapp.com/product/",
+                {
+                  title: title,
+                  desc: desc,
+                  img: downloadURL,
+                  categories: categories,
+                  brand: brand,
+                  filterTitleOne: filterTitleOne,
+                  promotion: promotion,
+                  condition: condition,
+                  floorPrice: Math.min(...arr),
+                  ceilPrice: Math.max(...arr),
+                  product: rows,
+                }
+              );
+            }
+            alert("create product successfully!");
+          } catch (err) {
+            if (err.response.status === 400) {
+              alert(err.response.data);
+            } else {
+              console.error(err);
+              alert("something went wrong..");
+            }
           }
-        );
-      } else {
-        const res = await userRequest.post(
-          "https://my-shop-e-commerce.herokuapp.com/product/",
-          {
-            title: title,
-            desc: desc,
-            img: img,
-            categories: categories,
-            brand: brand,
-            filterTitleOne: filterTitleOne,
-            promotion: promotion,
-            condition: condition,
-            floorPrice: Math.min(...arr),
-            ceilPrice: Math.max(...arr),
-            product: rows,
-          }
-        );
+        });
       }
-      alert("create product successfully!");
-    } catch (err) {
-      if (err.response.status === 400) {
-        alert(err.response.data);
-      } else {
-        console.error(err);
-        alert("something went wrong..");
-      }
-    }
+    );
+
+    //
   };
 
   const handleUploadImage = (e) => {
@@ -182,19 +224,18 @@ const NewProduct = () => {
     formData.append("file", file);
 
     try {
-      const uploadImg = await userRequest.post(
-        "https://my-shop-e-commerce.herokuapp.com/product/img",
-
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      setImg(
-        `https://my-shop-e-commerce.herokuapp.com/product/file/${uploadImg.data.filename}`
-      );
+      // const uploadImg = await userRequest.post(
+      //   "https://my-shop-e-commerce.herokuapp.com/product/img",
+      //   formData,
+      //   {
+      //     headers: {
+      //       "Content-Type": "multipart/form-data",
+      //     },
+      //   }
+      // );
+      // setImg(
+      //   `https://my-shop-e-commerce.herokuapp.com/product/file/${uploadImg.data.filename}`
+      // );
     } catch (err) {
       console.error(err);
     }
@@ -316,7 +357,7 @@ const NewProduct = () => {
             />
           </fieldset>
         </Section>
-
+        {console.log(file)}
         <UploadContainer>
           <InputImg
             type="file"
@@ -324,15 +365,7 @@ const NewProduct = () => {
             accept="image/*"
             onChange={handleUploadImage}
           />
-          {!img && (
-            <UploadButton
-              type="button"
-              value="upload"
-              onClick={(e) => {
-                handleClickUpload(e);
-              }}
-            />
-          )}
+
           {imagePreviewUrl && <ImagePreview src={imagePreviewUrl} />}
         </UploadContainer>
 
