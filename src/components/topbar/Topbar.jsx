@@ -3,9 +3,10 @@ import "./topbar.css";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../redux/userRedux";
 import { deleteAllProduct } from "../../redux/productRedux";
+import { Link } from "react-router-dom";
 
 export default function Topbar() {
-  const admin = useSelector((state) => state.user.currentUser);
+  const admin = useSelector((state) => state.user?.currentUser);
   const dispatch = useDispatch();
 
   const handleLogout = async (e) => {
@@ -22,7 +23,9 @@ export default function Topbar() {
     <div className="topbar">
       <div className="topbarWrapper">
         <div className="topLeft">
-          <span className="logo">my-shop admin</span>
+          <span className="logo">
+            <Link to="/">my-shop admin </Link>
+          </span>
         </div>
         <div className="topRight">
           {admin && (

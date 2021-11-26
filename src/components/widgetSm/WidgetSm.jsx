@@ -28,7 +28,7 @@ export default function WidgetSm() {
             <img
               src={
                 user.img ||
-                "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                "https://firebasestorage.googleapis.com/v0/b/myshop-e-commerce.appspot.com/o/static%20file%2F720101.png?alt=media&token=4899661b-d3ef-45ed-bb2d-9862d3406343"
               }
               alt=""
               className="widgetSmImg"

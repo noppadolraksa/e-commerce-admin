@@ -20,12 +20,13 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Box } from "@mui/system";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { userRequest } from "../../requestMethods";
 import app from "../../firebase";
+import { useDispatch } from "react-redux";
+import { addProduct } from "../../redux/apiCalls";
 
 const textStyle = {
   maxWidth: "300px",
@@ -37,23 +38,27 @@ const Container = styled.div`
   margin-bottom: 30px;
   margin-right: 20px;
 `;
+
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
+
 const TextTitle = styled.h1`
   margin-bottom: 10px;
 `;
 
 const Text = styled.p``;
+
 const UploadContainer = styled.form`
   margin-bottom: 10px;
 `;
-const UploadButton = styled.input``;
+
 const ImagePreview = styled.img`
   width: 50px;
   height: 50px;
 `;
+
 const Form = styled.form``;
 
 const Header = styled.div`
@@ -78,6 +83,7 @@ const Textarea = styled.textarea``;
 const Section = styled.section`
   margin-bottom: 10px;
 `;
+
 const FormControlContainer = styled.div`
   display: flex;
   align-items: center;
@@ -108,20 +114,19 @@ const NewProduct = () => {
   const [categories, setCategrories] = useState("");
   const [file, setFile] = useState({});
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
-
   const [brand, setBrand] = useState("");
   const [condition, setCondition] = useState("");
   const [filterTitleOne, setFilterTitleOne] = useState("");
   const [filterTitleTwo, setFilterTitleTwo] = useState("");
   const [filterTitleTwoHappen, setFilterTitleTwoHappen] = useState(false);
-
   const [inputFilterOne, setInputFilterOne] = useState([""]);
   const [inputFilterTwo, setInputFilterTwo] = useState([""]);
+
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const fileName = new Date().getTime() + file.name;
-
     const storage = getStorage(app);
     const storageRef = ref(storage, fileName);
     const uploadTask = uploadBytesResumable(storageRef, file);
@@ -132,8 +137,6 @@ const NewProduct = () => {
     uploadTask.on(
       "state_changed",
       (snapshot) => {
-        // Observe state change events such as progress, pause, and resume
-        // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         console.log("Upload is " + progress + "% done");
@@ -148,16 +151,13 @@ const NewProduct = () => {
         }
       },
       (error) => {
-        // Handle unsuccessful uploads
+        console.error("upload failure..");
       },
       () => {
-        // Handle successful uploads on complete
-        // For instance, get the download URL: https://firebasestorage.googleapis.com/...
         getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
           try {
             if (filterTitleTwoHappen) {
-              const res = await userRequest.post(
-                "https://my-shop-e-commerce.herokuapp.com/product/",
+              await addProduct(
                 {
                   title: title,
                   desc: desc,
@@ -171,11 +171,11 @@ const NewProduct = () => {
                   floorPrice: Math.min(...arr),
                   ceilPrice: Math.max(...arr),
                   product: rows,
-                }
+                },
+                dispatch
               );
             } else {
-              const res = await userRequest.post(
-                "https://my-shop-e-commerce.herokuapp.com/product/",
+              await addProduct(
                 {
                   title: title,
                   desc: desc,
@@ -188,7 +188,8 @@ const NewProduct = () => {
                   floorPrice: Math.min(...arr),
                   ceilPrice: Math.max(...arr),
                   product: rows,
-                }
+                },
+                dispatch
               );
             }
             alert("create product successfully!");
@@ -203,42 +204,16 @@ const NewProduct = () => {
         });
       }
     );
-
-    //
   };
 
   const handleUploadImage = (e) => {
     const file = e.target.files[0];
-
     const reader = new FileReader();
     reader.onloadend = () => {
       setFile(file);
       setImagePreviewUrl(reader.result);
     };
     reader.readAsDataURL(file);
-  };
-
-  const handleClickUpload = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      // const uploadImg = await userRequest.post(
-      //   "https://my-shop-e-commerce.herokuapp.com/product/img",
-      //   formData,
-      //   {
-      //     headers: {
-      //       "Content-Type": "multipart/form-data",
-      //     },
-      //   }
-      // );
-      // setImg(
-      //   `https://my-shop-e-commerce.herokuapp.com/product/file/${uploadImg.data.filename}`
-      // );
-    } catch (err) {
-      console.error(err);
-    }
   };
 
   const handleRows = (e) => {
@@ -261,8 +236,7 @@ const NewProduct = () => {
 
   const handleGenerateTable = async () => {
     const row = [];
-
-    inputFilterOne.map((one, i) =>
+    inputFilterOne.flatMap((one, i) =>
       inputFilterTwo.map((two, j) =>
         row.push({
           filterProductsOne: one,
@@ -333,7 +307,6 @@ const NewProduct = () => {
             onChange={(e) => setTitle(e.target.value)}
           />
         </Section>
-
         <Section>
           <TextField
             size="small"
@@ -344,11 +317,10 @@ const NewProduct = () => {
             onChange={(e) => setBrand(e.target.value)}
           />
         </Section>
-
         <Section>
           <fieldset style={{ width: 200, color: "blue" }}>
             <legend>
-              <Text>description*</Text>
+              <Text>Description*</Text>
             </legend>
             <Textarea
               style={{ width: 500, border: "none", minHeight: "100px" }}
@@ -365,10 +337,8 @@ const NewProduct = () => {
             accept="image/*"
             onChange={handleUploadImage}
           />
-
           {imagePreviewUrl && <ImagePreview src={imagePreviewUrl} />}
         </UploadContainer>
-
         <Section>
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">Categories*</InputLabel>
@@ -389,7 +359,6 @@ const NewProduct = () => {
             </Select>
           </FormControl>
         </Section>
-
         <Section>
           <FormControl fullWidth>
             <InputLabel id="contition-simple-select-label">
@@ -408,7 +377,6 @@ const NewProduct = () => {
             </Select>
           </FormControl>
         </Section>
-
         <Section>
           <Box sx={{ display: "flex" }}>
             <FormControl sx={{ m: 1 }} component="fieldset" variant="standard">
@@ -439,10 +407,10 @@ const NewProduct = () => {
                     <Checkbox
                       size="small"
                       onChange={handlePromotion}
-                      name="only9.9$"
+                      name="only 99 baht"
                     />
                   }
-                  label="only9.9$"
+                  label="only 99 baht"
                 />
                 <FormControlLabel
                   control={
@@ -459,10 +427,10 @@ const NewProduct = () => {
                     <Checkbox
                       size="small"
                       onChange={handlePromotion}
-                      name="9.9$free shipping"
+                      name="99 baht free shipping"
                     />
                   }
-                  label="9.9$free shipping"
+                  label="99 baht free shipping"
                 />
               </FormGroup>
               <FormHelperText>
@@ -487,7 +455,7 @@ const NewProduct = () => {
                 color="primary"
               />
             }
-            label="option two?"
+            label="Option two?"
           />
           <Button
             variant="text"
@@ -501,12 +469,12 @@ const NewProduct = () => {
         <FilterSection>
           <FilterSectionFlex style={{ width: "45%" }}>
             <TextField
+              style={{ marginBottom: "3px" }}
               variant="outlined"
               label="Option One"
               size="medium"
               onChange={(e) => setFilterTitleOne(e.target.value)}
             />
-
             {inputFilterOne.map((x, i) => {
               return (
                 <FormControlContainer key={i}>
@@ -555,7 +523,6 @@ const NewProduct = () => {
                 size="medium"
                 onChange={(e) => setFilterTitleTwo(e.target.value)}
               />
-
               {inputFilterTwo.map((x, i) => {
                 return (
                   <FormControlContainer key={i}>
@@ -573,7 +540,6 @@ const NewProduct = () => {
                         onChange={(e) => handleInputChange(e, i)}
                       />
                     </div>
-
                     {inputFilterTwo.length - 1 === i &&
                       inputFilterTwo.length !== 10 && (
                         <div style={{ flex: "2" }}>
@@ -601,7 +567,6 @@ const NewProduct = () => {
             </FilterSectionFlex>
           )}
         </FilterSection>
-
         <Section>
           <Button
             variant="outlined"
@@ -612,7 +577,6 @@ const NewProduct = () => {
             Generate Table
           </Button>
         </Section>
-
         <Section>
           <Form
             onSubmit={(e) => {
@@ -641,7 +605,7 @@ const NewProduct = () => {
                 disabled
                 color="secondary"
                 size="small"
-                value="price($)"
+                value="price(baht)"
               />
               <TextField
                 style={headerStyles}
@@ -659,7 +623,6 @@ const NewProduct = () => {
                   size="small"
                   value={item.filterProductsOne}
                 ></TextField>
-
                 {filterTitleTwoHappen && (
                   <TextField
                     disabled

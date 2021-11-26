@@ -13,15 +13,22 @@ import {
   FormHelperText,
   Switch,
 } from "@mui/material";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
+
 import { useSelector } from "react-redux";
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/system";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { userRequest } from "../../requestMethods";
 import { useLocation } from "react-router-dom";
 import { updateProduct } from "../../redux/apiCalls";
 import { useDispatch } from "react-redux";
+import app from "../../firebase";
 
 const textStyle = {
   maxWidth: "300px",
@@ -33,23 +40,27 @@ const Container = styled.div`
   margin-bottom: 30px;
   margin-right: 20px;
 `;
+
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
 `;
+
 const TextTitle = styled.h1`
   margin-bottom: 10px;
 `;
 
 const Text = styled.p``;
+
 const UploadContainer = styled.form`
   margin-bottom: 10px;
 `;
-const UploadButton = styled.input``;
+
 const ImagePreview = styled.img`
   width: 50px;
   height: 50px;
 `;
+
 const Form = styled.form``;
 
 const Header = styled.div`
@@ -74,6 +85,7 @@ const Textarea = styled.textarea``;
 const Section = styled.section`
   margin-bottom: 10px;
 `;
+
 const FormControlContainer = styled.div`
   display: flex;
   align-items: center;
@@ -112,7 +124,6 @@ const UpdateProduct = () => {
   const [filterTitleTwoHappen, setFilterTitleTwoHappen] = useState(false);
   const [inputFilterOne, setInputFilterOne] = useState([""]);
   const [inputFilterTwo, setInputFilterTwo] = useState([""]);
-
   const location = useLocation();
   const _id = location.pathname.split("/")[2];
   const products = useSelector((state) => state?.product?.products);
@@ -125,7 +136,7 @@ const UpdateProduct = () => {
       setPromotion(product.promotion);
       setTitle(product.title);
       setDesc(product.desc);
-      setBrand(product.brand);
+      setBrand(product?.brand);
       setCategrories(product.categories);
       setCondition(product.condition);
       setFilterTitleOne(product.filterTitleOne);
@@ -149,57 +160,137 @@ const UpdateProduct = () => {
       console.error(err);
     }
   }, [product]);
-  console.log(img);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const arr = [];
     rows.map((item) => arr.push(item.price));
-    try {
-      if (filterTitleTwoHappen) {
-        const res = await updateProduct(
-          _id,
-          {
-            title: title,
-            desc: desc,
-            img: img,
-            categories: categories,
-            brand: brand,
-            filterTitleOne: filterTitleOne,
-            promotion: promotion,
-            condition: condition,
-            filterTitleTwo: filterTitleTwo,
-            floorPrice: Math.min(...arr),
-            ceilPrice: Math.max(...arr),
-            product: rows,
-          },
-          dispatch
-        );
-      } else {
-        const res = await updateProduct(
-          _id,
-          {
-            title: title,
-            desc: desc,
-            img: img,
-            categories: categories,
-            brand: brand,
-            filterTitleOne: filterTitleOne,
-            promotion: promotion,
-            condition: condition,
-            floorPrice: Math.min(...arr),
-            ceilPrice: Math.max(...arr),
-            product: rows,
-          },
-          dispatch
-        );
-      }
-      alert("update product successfully!");
-    } catch (err) {
-      if (err.response.status === 400) {
-        alert(err.response.data);
-      } else {
-        console.error(err);
-        alert("something went wrong..");
+
+    if (Object.keys(file).length) {
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + file?.name;
+      const storageRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log("Upload is " + progress + "% done");
+          switch (snapshot.state) {
+            case "paused":
+              console.log("Upload is paused");
+              break;
+            case "running":
+              console.log("Upload is running");
+              break;
+            default:
+          }
+        },
+        (error) => {
+          console.error("upload failure..");
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+            try {
+              if (filterTitleTwoHappen) {
+                const res = await updateProduct(
+                  _id,
+                  {
+                    title: title,
+                    desc: desc,
+                    img: downloadURL,
+                    categories: categories,
+                    brand: brand,
+                    filterTitleOne: filterTitleOne,
+                    promotion: promotion,
+                    condition: condition,
+                    filterTitleTwo: filterTitleTwo,
+                    floorPrice: Math.min(...arr),
+                    ceilPrice: Math.max(...arr),
+                    product: rows,
+                  },
+                  dispatch
+                );
+              } else {
+                const res = await updateProduct(
+                  _id,
+                  {
+                    title: title,
+                    desc: desc,
+                    img: downloadURL,
+                    categories: categories,
+                    brand: brand,
+                    filterTitleOne: filterTitleOne,
+                    promotion: promotion,
+                    condition: condition,
+                    floorPrice: Math.min(...arr),
+                    ceilPrice: Math.max(...arr),
+                    product: rows,
+                  },
+                  dispatch
+                );
+              }
+              alert("update product successfully!");
+            } catch (err) {
+              if (err.response.status === 400) {
+                alert(err.response.data);
+              } else {
+                console.error(err);
+                alert("something went wrong..");
+              }
+            }
+          });
+        }
+      );
+    } else {
+      try {
+        if (filterTitleTwoHappen) {
+          const res = await updateProduct(
+            _id,
+            {
+              title: title,
+              desc: desc,
+              img: img,
+              categories: categories,
+              brand: brand,
+              filterTitleOne: filterTitleOne,
+              promotion: promotion,
+              condition: condition,
+              filterTitleTwo: filterTitleTwo,
+              floorPrice: Math.min(...arr),
+              ceilPrice: Math.max(...arr),
+              product: rows,
+            },
+            dispatch
+          );
+        } else {
+          const res = await updateProduct(
+            _id,
+            {
+              title: title,
+              desc: desc,
+              img: img,
+              categories: categories,
+              brand: brand,
+              filterTitleOne: filterTitleOne,
+              promotion: promotion,
+              condition: condition,
+              floorPrice: Math.min(...arr),
+              ceilPrice: Math.max(...arr),
+              product: rows,
+            },
+            dispatch
+          );
+        }
+        alert("update product successfully!");
+      } catch (err) {
+        if (err.response.status === 400) {
+          alert(err.response.data);
+        } else {
+          console.error(err);
+          alert("something went wrong..");
+        }
       }
     }
   };
@@ -214,35 +305,12 @@ const UpdateProduct = () => {
 
   const handleUploadImage = (e) => {
     const file = e.target.files[0];
-
     const reader = new FileReader();
     reader.onloadend = () => {
       setFile(file);
       setImagePreviewUrl(reader.result);
     };
     reader.readAsDataURL(file);
-  };
-
-  const handleClickUpload = async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const uploadImg = await userRequest.post(
-        "https://my-shop-e-commerce.herokuapp.com/product/img",
-
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      setImg(uploadImg.data.filename);
-    } catch (err) {
-      console.error(err);
-    }
   };
 
   const handleRows = (e) => {
@@ -354,7 +422,7 @@ const UpdateProduct = () => {
         <Section>
           <fieldset style={{ width: 200, color: "blue" }}>
             <legend>
-              <Text>description*</Text>
+              <Text>Description*</Text>
             </legend>
             <Textarea
               defaultValue={product?.desc}
@@ -372,15 +440,7 @@ const UpdateProduct = () => {
             accept="image/*"
             onChange={handleUploadImage}
           />
-          {!img && (
-            <UploadButton
-              type="button"
-              value="upload"
-              onClick={(e) => {
-                handleClickUpload(e);
-              }}
-            />
-          )}
+
           {imagePreviewUrl ? (
             <ImagePreview src={imagePreviewUrl} />
           ) : (
@@ -461,11 +521,11 @@ const UpdateProduct = () => {
                     <Checkbox
                       size="small"
                       onChange={handlePromotion}
-                      name="only9.9$"
-                      defaultChecked={isChecked({ name: "only9.9$" })}
+                      name="only 99 baht"
+                      defaultChecked={isChecked({ name: "only 99 baht" })}
                     />
                   }
-                  label="only9.9$"
+                  label="only 99 baht"
                 />
                 <FormControlLabel
                   control={
@@ -483,11 +543,13 @@ const UpdateProduct = () => {
                     <Checkbox
                       size="small"
                       onChange={handlePromotion}
-                      name="9.9$free shipping"
-                      defaultChecked={isChecked({ name: "9.9$free shipping" })}
+                      name="99 baht free shipping"
+                      defaultChecked={isChecked({
+                        name: "99 baht free shipping",
+                      })}
                     />
                   }
-                  label="9.9$free shipping"
+                  label="99 baht free shipping"
                 />
               </FormGroup>
               <FormHelperText>
@@ -512,7 +574,7 @@ const UpdateProduct = () => {
                 color="primary"
               />
             }
-            label="option two?"
+            label="Option two?"
           />
           <Button
             variant="text"
@@ -526,6 +588,7 @@ const UpdateProduct = () => {
         <FilterSection>
           <FilterSectionFlex style={{ width: "45%" }}>
             <TextField
+              style={{ marginBottom: "10px", marginRight: "10px" }}
               variant="outlined"
               label="Option One"
               size="medium"
@@ -539,7 +602,7 @@ const UpdateProduct = () => {
                   <div style={{ flex: "100" }}>
                     <TextField
                       defaultValue={x}
-                      style={{ width: "100%" }}
+                      style={{ width: "100%", marginBottom: "10px" }}
                       variant="outlined"
                       label={`#${i + 1}/10`}
                       inputProps={{ style: { fontSize: 12 } }} // font size of input text
@@ -577,6 +640,7 @@ const UpdateProduct = () => {
           {filterTitleTwoHappen && (
             <FilterSectionFlex style={{ width: "45%" }}>
               <TextField
+                style={{ marginBottom: "10px" }}
                 variant="outlined"
                 label="Option Two"
                 size="medium"
@@ -590,7 +654,7 @@ const UpdateProduct = () => {
                     <div style={{ flex: "100" }}>
                       <TextField
                         defaultValue={x}
-                        style={{ width: "100%" }}
+                        style={{ width: "100%", marginBottom: "10px" }}
                         variant="outlined"
                         label={`#${i + 1}/10`}
                         inputProps={{ style: { fontSize: 12 } }} // font size of input text
@@ -643,11 +707,7 @@ const UpdateProduct = () => {
         </Section>
 
         <Section>
-          <Form
-            onSubmit={(e) => {
-              handleSubmit(e);
-            }}
-          >
+          <Form>
             <Header>
               <TextField
                 style={headerStyles}
@@ -670,7 +730,7 @@ const UpdateProduct = () => {
                 disabled
                 color="secondary"
                 size="small"
-                value="price($)"
+                value="price(baht)"
               />
               <TextField
                 style={headerStyles}
@@ -729,7 +789,12 @@ const UpdateProduct = () => {
                 ></TextField>
               </Body>
             ))}
-            <Button variant="contained" type="submit" sx={{ width: 100 }}>
+            <Button
+              variant="contained"
+              type="submit"
+              sx={{ width: 100 }}
+              onClick={(e) => handleSubmit(e)}
+            >
               UPDATE
             </Button>
           </Form>

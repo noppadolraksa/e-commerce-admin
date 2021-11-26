@@ -21,6 +21,9 @@
   color: darkblue;
   cursor: pointer;
 }
+.logo a {
+  text-decoration: none;
+}
 
 .topRight {
   display: flex;

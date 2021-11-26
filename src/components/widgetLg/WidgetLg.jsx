@@ -38,7 +38,7 @@ export default function WidgetLg() {
             <tr className="widgetLgTr" key={order._id}>
               <td className="widgetLgUser">
                 <img
-                  src="https://images.pexels.com/photos/4172933/pexels-photo-4172933.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+                  src="https://firebasestorage.googleapis.com/v0/b/myshop-e-commerce.appspot.com/o/static%20file%2F720101.png?alt=media&token=4899661b-d3ef-45ed-bb2d-9862d3406343"
                   alt=""
                   className="widgetLgImg"
                 />
