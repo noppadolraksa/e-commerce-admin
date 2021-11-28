@@ -20,15 +20,16 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 
-import { useSelector } from "react-redux";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { Box } from "@mui/system";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useLocation } from "react-router-dom";
-import { updateProduct } from "../../redux/apiCalls";
-import { useDispatch } from "react-redux";
 import app from "../../firebase";
+import { useDispatch } from "react-redux";
+import { addProduct } from "../../redux/apiCalls";
+import InputTitle from "../../components/productForm/InputTitle2";
+import ButtonResult from "../../components/productForm/ButtonResult";
 
 const textStyle = {
   maxWidth: "300px",
@@ -52,7 +53,7 @@ const TextTitle = styled.h1`
 
 const Text = styled.p``;
 
-const UploadContainer = styled.form`
+const UploadContainer = styled.div`
   margin-bottom: 10px;
 `;
 
@@ -61,7 +62,7 @@ const ImagePreview = styled.img`
   height: 50px;
 `;
 
-const Form = styled.form``;
+const Form = styled.div``;
 
 const Header = styled.div`
   display: flex;
@@ -108,14 +109,14 @@ const FilterSectionFlex = styled.section`
 
 const InputImg = styled.input``;
 
-const UpdateProduct = () => {
+const NewProduct2 = () => {
+  const [data, setData] = useState(null);
   const [promotion, setPromotion] = useState([]);
   const [rows, setRows] = useState([]);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [categories, setCategrories] = useState("");
   const [file, setFile] = useState({});
-  const [img, setImg] = useState("");
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [brand, setBrand] = useState("");
   const [condition, setCondition] = useState("");
@@ -124,183 +125,89 @@ const UpdateProduct = () => {
   const [filterTitleTwoHappen, setFilterTitleTwoHappen] = useState(false);
   const [inputFilterOne, setInputFilterOne] = useState([""]);
   const [inputFilterTwo, setInputFilterTwo] = useState([""]);
-  const location = useLocation();
-  const _id = location.pathname.split("/")[2];
-  const products = useSelector((state) => state?.product?.products);
-  const product = products.find((item) => item._id === _id);
+
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    try {
-      setImg(product.img);
-      setPromotion(product.promotion);
-      setTitle(product.title);
-      setDesc(product.desc);
-      setBrand(product?.brand);
-      setCategrories(product.categories);
-      setCondition(product.condition);
-      setFilterTitleOne(product.filterTitleOne);
-      if (product.filterTitleTwo) {
-        setFilterTitleTwoHappen(true);
-        setFilterTitleTwo(product.filterTitleTwo);
-        const arrOne = [];
-        product.product.map((item) => arrOne.push(item.filterProductsOne));
-        setInputFilterOne([...new Set(arrOne)]);
-        const arrTwo = [];
-        product.product.map((item) => arrTwo.push(item.filterProductsTwo));
-        setInputFilterTwo([...new Set(arrTwo)]);
-      } else {
-        const arrOne = [];
-        product.product.map((item) => arrOne.push(item.filterProductsOne));
-        setInputFilterOne([...new Set(arrOne)]);
-      }
-      setRows(product.product);
-      setTitle(product.title);
-    } catch (err) {
-      console.error(err);
-    }
-  }, [product]);
-
-  const handleSubmit = async (e) => {
+  const handleSubmitt = async (e) => {
     e.preventDefault();
+    const fileName = new Date().getTime() + file.name;
+    const storage = getStorage(app);
+    const storageRef = ref(storage, fileName);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
     const arr = [];
     rows.map((item) => arr.push(item.price));
 
-    if (Object.keys(file).length) {
-      const storage = getStorage(app);
-      const fileName = new Date().getTime() + file?.name;
-      const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log("Upload is " + progress + "% done");
-          switch (snapshot.state) {
-            case "paused":
-              console.log("Upload is paused");
-              break;
-            case "running":
-              console.log("Upload is running");
-              break;
-            default:
-          }
-        },
-        (error) => {
-          console.error("upload failure..");
-        },
-        () => {
-          getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
-            try {
-              if (filterTitleTwoHappen) {
-                const res = await updateProduct(
-                  _id,
-                  {
-                    title: title,
-                    desc: desc,
-                    img: downloadURL,
-                    categories: categories,
-                    brand: brand,
-                    filterTitleOne: filterTitleOne,
-                    promotion: promotion,
-                    condition: condition,
-                    filterTitleTwo: filterTitleTwo,
-                    floorPrice: Math.min(...arr),
-                    ceilPrice: Math.max(...arr),
-                    product: rows,
-                  },
-                  dispatch
-                );
-              } else {
-                const res = await updateProduct(
-                  _id,
-                  {
-                    title: title,
-                    desc: desc,
-                    img: downloadURL,
-                    categories: categories,
-                    brand: brand,
-                    filterTitleOne: filterTitleOne,
-                    promotion: promotion,
-                    condition: condition,
-                    floorPrice: Math.min(...arr),
-                    ceilPrice: Math.max(...arr),
-                    product: rows,
-                  },
-                  dispatch
-                );
-              }
-              alert("update product successfully!");
-            } catch (err) {
-              if (err.response.status === 400) {
-                alert(err.response.data);
-              } else {
-                console.error(err);
-                alert("something went wrong..");
-              }
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log("Upload is " + progress + "% done");
+        switch (snapshot.state) {
+          case "paused":
+            console.log("Upload is paused");
+            break;
+          case "running":
+            console.log("Upload is running");
+            break;
+          default:
+        }
+      },
+      (error) => {
+        console.error("upload failure..");
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
+          try {
+            if (filterTitleTwoHappen) {
+              await addProduct(
+                {
+                  title: title,
+                  desc: desc,
+                  img: downloadURL,
+                  categories: categories,
+                  brand: brand,
+                  filterTitleOne: filterTitleOne,
+                  promotion: promotion,
+                  condition: condition,
+                  filterTitleTwo: filterTitleTwo,
+                  floorPrice: Math.min(...arr),
+                  ceilPrice: Math.max(...arr),
+                  product: rows,
+                },
+                dispatch
+              );
+            } else {
+              await addProduct(
+                {
+                  title: title,
+                  desc: desc,
+                  img: downloadURL,
+                  categories: categories,
+                  brand: brand,
+                  filterTitleOne: filterTitleOne,
+                  promotion: promotion,
+                  condition: condition,
+                  floorPrice: Math.min(...arr),
+                  ceilPrice: Math.max(...arr),
+                  product: rows,
+                },
+                dispatch
+              );
             }
-          });
-        }
-      );
-    } else {
-      try {
-        if (filterTitleTwoHappen) {
-          const res = await updateProduct(
-            _id,
-            {
-              title: title,
-              desc: desc,
-              img: img,
-              categories: categories,
-              brand: brand,
-              filterTitleOne: filterTitleOne,
-              promotion: promotion,
-              condition: condition,
-              filterTitleTwo: filterTitleTwo,
-              floorPrice: Math.min(...arr),
-              ceilPrice: Math.max(...arr),
-              product: rows,
-            },
-            dispatch
-          );
-        } else {
-          const res = await updateProduct(
-            _id,
-            {
-              title: title,
-              desc: desc,
-              img: img,
-              categories: categories,
-              brand: brand,
-              filterTitleOne: filterTitleOne,
-              promotion: promotion,
-              condition: condition,
-              floorPrice: Math.min(...arr),
-              ceilPrice: Math.max(...arr),
-              product: rows,
-            },
-            dispatch
-          );
-        }
-        alert("update product successfully!");
-      } catch (err) {
-        if (err.response.status === 400) {
-          alert(err.response.data);
-        } else {
-          console.error(err);
-          alert("something went wrong..");
-        }
+            alert("create product successfully!");
+          } catch (err) {
+            if (err.response.status === 400) {
+              alert(err.response.data);
+            } else {
+              console.error(err);
+              alert("something went wrong..");
+            }
+          }
+        });
       }
-    }
-  };
-
-  const isChecked = (e) => {
-    if (product?.promotion?.find((item) => item === e.name)) {
-      return true;
-    } else {
-      return false;
-    }
+    );
   };
 
   const handleUploadImage = (e) => {
@@ -333,8 +240,7 @@ const UpdateProduct = () => {
 
   const handleGenerateTable = async () => {
     const row = [];
-
-    inputFilterOne.map((one, i) =>
+    inputFilterOne.flatMap((one, i) =>
       inputFilterTwo.map((two, j) =>
         row.push({
           filterProductsOne: one,
@@ -386,27 +292,26 @@ const UpdateProduct = () => {
 
   const handleClearFilter = () => {
     setInputFilterOne([inputFilterOne[0]]);
-    setInputFilterTwo([inputFilterTwo[0]]);
+    setInputFilterTwo("");
     setRows([]);
   };
 
+  const defaultValues = {
+    title: "",
+  };
+
+  // const { handleSubmit, setValue, control } = useForm({ defaultValues });
+
   return (
     <Container>
-      <TextTitle>Update Product</TextTitle>
+      <TextTitle>New Product</TextTitle>
       <Wrapper>
-        <Section>
-          <TextField
-            size="small"
-            id="title"
-            variant="outlined"
-            label="Title"
-            sx={{ mb: 1, width: 600 }}
-            required
-            defaultValue={product?.title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </Section>
-
+        {/* <Form onSubmit={handleSubmit((data) => setData(data))}>
+          <Section>
+            <InputTitle control={{ control }} />
+          </Section>
+          <ButtonResult {...{ data, setValue }} />
+        </Form> */}
         <Section>
           <TextField
             size="small"
@@ -414,25 +319,22 @@ const UpdateProduct = () => {
             variant="outlined"
             label="Brand"
             sx={textStyle}
-            defaultValue={product?.brand}
             onChange={(e) => setBrand(e.target.value)}
           />
         </Section>
-
         <Section>
           <fieldset style={{ width: 200, color: "blue" }}>
             <legend>
               <Text>Description*</Text>
             </legend>
             <Textarea
-              defaultValue={product?.desc}
               style={{ width: 500, border: "none", minHeight: "100px" }}
               placeholder="it can contain up to 500 characters.."
               onChange={(e) => setDesc(e.target.value)}
             />
           </fieldset>
         </Section>
-
+        {console.log(file)}
         <UploadContainer>
           <InputImg
             type="file"
@@ -440,14 +342,10 @@ const UpdateProduct = () => {
             accept="image/*"
             onChange={handleUploadImage}
           />
-
-          {imagePreviewUrl ? (
+          {imagePreviewUrl && (
             <ImagePreview alt="image preview" src={imagePreviewUrl} />
-          ) : (
-            <ImagePreview alt="image preview" src={product?.img} />
           )}
         </UploadContainer>
-
         <Section>
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">Categories*</InputLabel>
@@ -468,7 +366,6 @@ const UpdateProduct = () => {
             </Select>
           </FormControl>
         </Section>
-
         <Section>
           <FormControl fullWidth>
             <InputLabel id="contition-simple-select-label">
@@ -482,13 +379,11 @@ const UpdateProduct = () => {
               label="Condition*"
               onChange={(e) => setCondition(e.target.value)}
             >
-              {console.log(product)}
               <MenuItem value="New">New</MenuItem>
               <MenuItem value="Used">Used</MenuItem>
             </Select>
           </FormControl>
         </Section>
-
         <Section>
           <Box sx={{ display: "flex" }}>
             <FormControl sx={{ m: 1 }} component="fieldset" variant="standard">
@@ -500,7 +395,6 @@ const UpdateProduct = () => {
                       size="small"
                       onChange={handlePromotion}
                       name="ร้านค้าแนะนำ"
-                      defaultChecked={isChecked({ name: "ร้านค้าแนะนำ" })}
                     />
                   }
                   label="ร้านค้าแนะนำ"
@@ -511,7 +405,6 @@ const UpdateProduct = () => {
                       size="small"
                       onChange={handlePromotion}
                       name="exclusive price"
-                      defaultChecked={isChecked({ name: "exclusive price" })}
                     />
                   }
                   label="exclusive price"
@@ -522,7 +415,6 @@ const UpdateProduct = () => {
                       size="small"
                       onChange={handlePromotion}
                       name="only 99 baht"
-                      defaultChecked={isChecked({ name: "only 99 baht" })}
                     />
                   }
                   label="only 99 baht"
@@ -533,7 +425,6 @@ const UpdateProduct = () => {
                       size="small"
                       onChange={handlePromotion}
                       name="10%cashback"
-                      defaultChecked={isChecked({ name: "10%cashback" })}
                     />
                   }
                   label="10%cashback"
@@ -544,9 +435,6 @@ const UpdateProduct = () => {
                       size="small"
                       onChange={handlePromotion}
                       name="99 baht free shipping"
-                      defaultChecked={isChecked({
-                        name: "99 baht free shipping",
-                      })}
                     />
                   }
                   label="99 baht free shipping"
@@ -588,21 +476,18 @@ const UpdateProduct = () => {
         <FilterSection>
           <FilterSectionFlex style={{ width: "45%" }}>
             <TextField
-              style={{ marginBottom: "10px", marginRight: "10px" }}
+              style={{ marginBottom: "3px" }}
               variant="outlined"
               label="Option One"
               size="medium"
-              defaultValue={product?.filterTitleOne}
               onChange={(e) => setFilterTitleOne(e.target.value)}
             />
-
             {inputFilterOne.map((x, i) => {
               return (
                 <FormControlContainer key={i}>
                   <div style={{ flex: "100" }}>
                     <TextField
-                      defaultValue={x}
-                      style={{ width: "100%", marginBottom: "10px" }}
+                      style={{ width: "100%" }}
                       variant="outlined"
                       label={`#${i + 1}/10`}
                       inputProps={{ style: { fontSize: 12 } }} // font size of input text
@@ -627,8 +512,8 @@ const UpdateProduct = () => {
                   {inputFilterOne.length !== 1 && (
                     <div style={{ flex: "1" }}>
                       <DeleteIcon
-                        color="error"
                         style={{ cursor: "pointer" }}
+                        color="error"
                         onClick={(e) => handleRemoveClick("removeFilterOne", i)}
                       ></DeleteIcon>
                     </div>
@@ -640,21 +525,17 @@ const UpdateProduct = () => {
           {filterTitleTwoHappen && (
             <FilterSectionFlex style={{ width: "45%" }}>
               <TextField
-                style={{ marginBottom: "10px" }}
                 variant="outlined"
                 label="Option Two"
                 size="medium"
-                defaultValue={product?.filterTitleTwo}
                 onChange={(e) => setFilterTitleTwo(e.target.value)}
               />
-
               {inputFilterTwo.map((x, i) => {
                 return (
                   <FormControlContainer key={i}>
                     <div style={{ flex: "100" }}>
                       <TextField
-                        defaultValue={x}
-                        style={{ width: "100%", marginBottom: "10px" }}
+                        style={{ width: "100%" }}
                         variant="outlined"
                         label={`#${i + 1}/10`}
                         inputProps={{ style: { fontSize: 12 } }} // font size of input text
@@ -666,7 +547,6 @@ const UpdateProduct = () => {
                         onChange={(e) => handleInputChange(e, i)}
                       />
                     </div>
-
                     {inputFilterTwo.length - 1 === i &&
                       inputFilterTwo.length !== 10 && (
                         <div style={{ flex: "2" }}>
@@ -680,8 +560,8 @@ const UpdateProduct = () => {
                     {inputFilterTwo.length !== 1 && (
                       <div style={{ flex: "1" }}>
                         <DeleteIcon
-                          style={{ cursor: "pointer" }}
                           color="error"
+                          style={{ cursor: "pointer" }}
                           onClick={(e) =>
                             handleRemoveClick("removeFilterTwo", i)
                           }
@@ -694,7 +574,6 @@ const UpdateProduct = () => {
             </FilterSectionFlex>
           )}
         </FilterSection>
-
         <Section>
           <Button
             variant="outlined"
@@ -705,9 +584,12 @@ const UpdateProduct = () => {
             Generate Table
           </Button>
         </Section>
-
         <Section>
-          <Form>
+          <Form
+            onSubmit={(e) => {
+              handleSubmitt(e);
+            }}
+          >
             <Header>
               <TextField
                 style={headerStyles}
@@ -748,7 +630,6 @@ const UpdateProduct = () => {
                   size="small"
                   value={item.filterProductsOne}
                 ></TextField>
-
                 {filterTitleTwoHappen && (
                   <TextField
                     disabled
@@ -762,7 +643,6 @@ const UpdateProduct = () => {
                   variant="outlined"
                   size="small"
                   name="price"
-                  defaultValue={item.price}
                   placeholder="fill here.."
                   onChange={(e) =>
                     handleRows({
@@ -777,7 +657,6 @@ const UpdateProduct = () => {
                   variant="outlined"
                   size="small"
                   name="stock"
-                  defaultValue={item.stock}
                   placeholder="fill here.."
                   onChange={(e) =>
                     handleRows({
@@ -789,13 +668,8 @@ const UpdateProduct = () => {
                 ></TextField>
               </Body>
             ))}
-            <Button
-              variant="contained"
-              type="submit"
-              sx={{ width: 100 }}
-              onClick={(e) => handleSubmit(e)}
-            >
-              UPDATE
+            <Button variant="contained" type="submit" sx={{ width: 100 }}>
+              SUBMIT
             </Button>
           </Form>
         </Section>
@@ -804,4 +678,4 @@ const UpdateProduct = () => {
   );
 };
 
-export default UpdateProduct;
+export default NewProduct2;

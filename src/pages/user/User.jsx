@@ -23,7 +23,7 @@ export default function User() {
           <div className="userShowTop">
             <img
               src="https://images.pexels.com/photos/1152994/pexels-photo-1152994.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500"
-              alt=""
+              alt="user img"
               className="userShowImg"
             />
             <div className="userShowTopTitle">
@@ -106,7 +106,7 @@ export default function User() {
                 <img
                   className="userUpdateImg"
                   src="https://images.pexels.com/photos/1152994/pexels-photo-1152994.jpeg?auto=compress&cs=tinysrgb&dpr=2&w=500"
-                  alt=""
+                  alt="user upload img"
                 />
                 <label htmlFor="file">
                   <Publish className="userUpdateIcon" />

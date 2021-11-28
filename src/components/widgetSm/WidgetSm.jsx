@@ -30,7 +30,7 @@ export default function WidgetSm() {
                 user.img ||
                 "https://firebasestorage.googleapis.com/v0/b/myshop-e-commerce.appspot.com/o/static%20file%2F720101.png?alt=media&token=4899661b-d3ef-45ed-bb2d-9862d3406343"
               }
-              alt=""
+              alt="widgetSm"
               className="widgetSmImg"
             />
             <div className="widgetSmUser">

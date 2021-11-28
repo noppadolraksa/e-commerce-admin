@@ -33,7 +33,7 @@ export default function ProductList() {
                 params.row.img ||
                 "https://4.bp.blogspot.com/-OCutvC4wPps/XfNnRz5PvhI/AAAAAAAAEfo/qJ8P1sqLWesMdOSiEoUH85s3hs_vn97HACLcBGAsYHQ/s1600/no-image-found-360x260.png"
               }
-              alt=""
+              alt="product list"
             />
             {params.row.title}
           </div>

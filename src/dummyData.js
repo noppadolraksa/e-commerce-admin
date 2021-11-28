@@ -42,3 +42,11 @@ export const productRows = [
     price: "120.00 baht",
   },
 ];
+
+export const promotionData = [
+  "ร้านค้าแนะนำ",
+  "exclusive price",
+  "only 99 baht",
+  "10%cashback",
+  "99 baht free shipping",
+];

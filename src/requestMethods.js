@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://my-shop-e-commerce.herokuapp.com/";
+const BASE_URL = "http://localhost:8080/";
 const persistRoot = JSON.parse(localStorage.getItem("persist:root"));
 let TOKEN = "";
 if (persistRoot) {

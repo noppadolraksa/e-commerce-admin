@@ -39,7 +39,7 @@ export default function WidgetLg() {
               <td className="widgetLgUser">
                 <img
                   src="https://firebasestorage.googleapis.com/v0/b/myshop-e-commerce.appspot.com/o/static%20file%2F720101.png?alt=media&token=4899661b-d3ef-45ed-bb2d-9862d3406343"
-                  alt=""
+                  alt="widgetLg"
                   className="widgetLgImg"
                 />
                 <span className="widgetLgName ">{order.userId}</span>
