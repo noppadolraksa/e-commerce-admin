@@ -28,13 +28,15 @@ export default function FeaturedInfo() {
     };
     getIncome();
   }, [incomeNow?.total, incomePrevious?.total]);
-
+  console.log(income);
   return (
     <div className="featured">
       <div className="featuredItem">
         <span className="featuredTitle">Revanue</span>
         <div className="featuredMoneyContainer">
-          <span className="featuredMoney">{`${incomeNow?.total} baht`}</span>
+          <span className="featuredMoney">{`${
+            incomeNow?.total || 0
+          } baht`}</span>
           <span className="featuredMoneyRate">
             {Math.floor(perc)}%{" "}
             {perc < 0 ? (
