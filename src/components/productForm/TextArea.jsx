@@ -12,7 +12,7 @@ const TextArea = ({ control, defaultValue }) => {
           <textarea
             {...field}
             style={{ width: 500, border: "none", minHeight: "100px" }}
-            placeholder="it can contain up to 500 characters.."
+            placeholder="it can contain up to 5000 characters.."
           />
         )}
         defaultValue={defaultValue}
@@ -25,8 +25,8 @@ const TextArea = ({ control, defaultValue }) => {
             message: "description must be at least 10 characters",
           },
           maxLength: {
-            value: 500,
-            message: "description has 500 characters limit",
+            value: 5000,
+            message: "description has 5000 characters limit",
           },
         }}
       />

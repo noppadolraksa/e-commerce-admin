@@ -13,23 +13,23 @@ const InputTitle = ({ control, defaultValue, errors }) => {
             size="small"
             variant="outlined"
             label="Title"
-            defaultValue={defaultValue}
           />
         )}
         name="title"
         control={control}
+        defaultValue={defaultValue}
         rules={{
           required: "title required..",
           minLength: {
             value: 10,
-            message: "description must be at least 10 characters",
+            message: "title must be at least 10 characters",
           },
           maxLength: {
             value: 100,
-            message: "description has 100 characters limit",
+            message: "title has 100 characters limit",
           },
           pattern: {
-            value: /^[A-Za-z0-9\s]+$/,
+            value: /^[\w\W0-9\s]+$/,
             message: "title only contain letters numbers and backspace",
           },
         }}

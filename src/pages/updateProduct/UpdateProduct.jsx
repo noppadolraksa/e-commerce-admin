@@ -52,8 +52,8 @@ const Section = styled.section`
   margin: 5px 0px 10px 5px;
 `;
 
-const NewProduct = () => {
-  const [data, setData] = useState(null);
+const UpdateProduct = () => {
+  const [data, setData] = useState({});
   const [file, setFile] = useState({});
   const [promotion, setPromotion] = useState([]);
   const [categories, setCategories] = useState("");
@@ -112,8 +112,7 @@ const NewProduct = () => {
     }
   }, [product]);
 
-  const handleUpdateProduct = async (e) => {
-    e.preventDefault();
+  const handleUpdateProduct = async (data) => {
     const arr = [];
     rows.map((item) => arr.push(item.price));
 
@@ -335,4 +334,4 @@ const NewProduct = () => {
   );
 };
 
-export default NewProduct;
+export default UpdateProduct;

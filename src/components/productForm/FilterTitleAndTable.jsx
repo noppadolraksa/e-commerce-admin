@@ -135,6 +135,7 @@ const FilterTitle = ({
             variant="outlined"
             label="Option One"
             size="medium"
+            value={filterTitleOne}
             onChange={(e) => setFilterTitleOne(e.target.value)}
           />
           {inputFilterOne.map((x, i) => {
@@ -142,6 +143,7 @@ const FilterTitle = ({
               <FormControlContainer key={i}>
                 <div style={{ flex: "100" }}>
                   <TextField
+                    value={x}
                     style={{ width: "100%", marginBottom: "5px" }}
                     variant="outlined"
                     label={`#${i + 1}/10`}
@@ -182,6 +184,7 @@ const FilterTitle = ({
         {filterTitleTwoHappen && (
           <FilterSectionFlex style={{ width: "45%" }}>
             <TextField
+              value={filterTitleTwo}
               style={{ marginBottom: "10px" }}
               variant="outlined"
               label="Option Two"
@@ -193,6 +196,7 @@ const FilterTitle = ({
                 <FormControlContainer key={i}>
                   <div style={{ flex: "100", marginBottom: "5px" }}>
                     <TextField
+                      value={x}
                       style={{ width: "100%" }}
                       variant="outlined"
                       label={`#${i + 1}/10`}
@@ -292,6 +296,7 @@ const FilterTitle = ({
               ></TextField>
             )}
             <TextField
+              defaultValue={item.price}
               style={{ flex: 1 }}
               type="number"
               variant="outlined"
@@ -307,6 +312,7 @@ const FilterTitle = ({
               }
             ></TextField>
             <TextField
+              defaultValue={item.stock}
               style={{ flex: 1 }}
               type="number"
               variant="outlined"
