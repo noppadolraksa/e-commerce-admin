@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 import {
   Checkbox,
@@ -17,6 +17,8 @@ const CheckboxPromotion = ({
   promotion,
   setPromotion,
 }) => {
+  const [boolean, setBoolean] = useState([]);
+
   const handleValue = (e) => {
     if (e.target.checked === true) {
       setPromotion([...promotion, e.target.name]);
@@ -26,41 +28,32 @@ const CheckboxPromotion = ({
     }
   };
 
-  const isChecked = (e) => {
-    if (defaultValue?.promotion?.find((item) => item === e.name)) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
+  useEffect(() => {
+    setBoolean(promotion);
+  }, [promotion, boolean]);
   return (
     <div>
       <Box sx={{ display: "flex" }}>
         <FormControl sx={{ m: 1 }} component="fieldset" variant="standard">
           <FormLabel component="legend">Promotion</FormLabel>
-          <Controller
-            control={control}
-            render={({ field }) => (
-              <FormGroup>
-                {promotionData.map((name, i) => (
-                  <FormControlLabel
-                    key={i}
-                    control={
-                      <Checkbox
-                        {...field}
-                        size="small"
-                        name={name}
-                        onChange={handleValue}
-                        defaultChecked={isChecked({ name: { name } })}
-                      />
-                    }
-                    label={name}
+
+          <FormGroup>
+            {promotionData.map((name, i) => (
+              <FormControlLabel
+                key={name}
+                control={
+                  <Checkbox
+                    size="small"
+                    onChange={handleValue}
+                    name={name}
+                    checked={promotion.includes(name)}
                   />
-                ))}
-              </FormGroup>
-            )}
-          />
+                }
+                label={name}
+              />
+            ))}
+          </FormGroup>
+
           <FormHelperText>these can be selected more than one</FormHelperText>
         </FormControl>
       </Box>

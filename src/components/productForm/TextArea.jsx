@@ -1,7 +1,7 @@
 import React from "react";
 import { Controller } from "react-hook-form";
 
-const TextArea = ({ control }) => {
+const TextArea = ({ control, defaultValue }) => {
   return (
     <fieldset style={{ width: 200, color: "blue" }}>
       <legend>
@@ -15,7 +15,7 @@ const TextArea = ({ control }) => {
             placeholder="it can contain up to 500 characters.."
           />
         )}
-        defaultValue=""
+        defaultValue={defaultValue}
         name="desc"
         control={control}
         rules={{

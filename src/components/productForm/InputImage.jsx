@@ -7,7 +7,7 @@ const ImagePreview = styled.img`
   height: 50px;
 `;
 
-const InputImage = ({ control, file, setFile }) => {
+const InputImage = ({ control, file, setFile, img }) => {
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
   const handleUploadImage = (e) => {
@@ -35,7 +35,11 @@ const InputImage = ({ control, file, setFile }) => {
         name="img"
         control={control}
       />
-      {imagePreviewUrl && <ImagePreview src={imagePreviewUrl} />}
+      {imagePreviewUrl ? (
+        <ImagePreview alt="image preview" src={imagePreviewUrl} />
+      ) : (
+        <ImagePreview alt="image preview" src={img} />
+      )}
     </section>
   );
 };

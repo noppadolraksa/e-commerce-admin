@@ -10,6 +10,7 @@ const FilterSection = styled.section`
   border-radius: 5px;
   display: flex;
   margin-bottom: 10px;
+  margin-right: 20px;
   justify-content: center;
   padding: 10px;
 `;
@@ -18,17 +19,23 @@ const Header = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-around;
+  margin-right: 20px;
 `;
 
 const Body = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-around;
+  margin-right: 20px;
 `;
 
 const headerStyles = {
   flex: 1,
   backgroundColor: "#ededed",
+  border: "0.5px solid lightGray",
+  borderRadius: "5px",
+  display: "flex",
+  justifyContent: "center",
 };
 
 const FormControlContainer = styled.div`
@@ -40,6 +47,10 @@ const FilterSectionFlex = styled.section`
   display: flex;
   flex-direction: column;
   width: 45%;
+`;
+
+const ButtonContainer = styled.div`
+  margin-bottom: 20px;
 `;
 
 const FilterTitle = ({
@@ -120,7 +131,7 @@ const FilterTitle = ({
       <FilterSection>
         <FilterSectionFlex style={{ width: "45%" }}>
           <TextField
-            style={{ marginBottom: "3px" }}
+            style={{ marginBottom: "10px" }}
             variant="outlined"
             label="Option One"
             size="medium"
@@ -131,10 +142,12 @@ const FilterTitle = ({
               <FormControlContainer key={i}>
                 <div style={{ flex: "100" }}>
                   <TextField
-                    style={{ width: "100%" }}
+                    style={{ width: "100%", marginBottom: "5px" }}
                     variant="outlined"
                     label={`#${i + 1}/10`}
-                    inputProps={{ style: { fontSize: 12 } }} // font size of input text
+                    inputProps={{
+                      style: { fontSize: 12 },
+                    }} // font size of input text
                     InputLabelProps={{
                       style: { fontSize: 12, color: "#889aff" },
                     }} // font size of input label
@@ -169,6 +182,7 @@ const FilterTitle = ({
         {filterTitleTwoHappen && (
           <FilterSectionFlex style={{ width: "45%" }}>
             <TextField
+              style={{ marginBottom: "10px" }}
               variant="outlined"
               label="Option Two"
               size="medium"
@@ -177,7 +191,7 @@ const FilterTitle = ({
             {inputFilterTwo.map((x, i) => {
               return (
                 <FormControlContainer key={i}>
-                  <div style={{ flex: "100" }}>
+                  <div style={{ flex: "100", marginBottom: "5px" }}>
                     <TextField
                       style={{ width: "100%" }}
                       variant="outlined"
@@ -216,7 +230,7 @@ const FilterTitle = ({
           </FilterSectionFlex>
         )}
       </FilterSection>
-      <div>
+      <ButtonContainer>
         <Button
           variant="outlined"
           size="small"
@@ -225,37 +239,37 @@ const FilterTitle = ({
         >
           Generate Table
         </Button>
-      </div>
+      </ButtonContainer>
       <div>
         <Header>
           <TextField
             style={headerStyles}
-            disabled
-            color="secondary"
             size="small"
+            disabled
+            variant="outlined"
             value={filterTitleOne}
           />
           {filterTitleTwoHappen && (
             <TextField
               style={headerStyles}
-              disabled
-              color="secondary"
               size="small"
+              variant="outlined"
+              disabled
               value={filterTitleTwo}
             />
           )}
           <TextField
             style={headerStyles}
-            disabled
-            color="secondary"
+            variant="outlined"
             size="small"
+            disabled
             value="price(baht)"
           />
           <TextField
             style={headerStyles}
-            disabled
-            color="secondary"
+            variant="outlined"
             size="small"
+            disabled
             value="stock"
           />
         </Header>
@@ -266,9 +280,11 @@ const FilterTitle = ({
               variant="outlined"
               size="small"
               value={item.filterProductsOne}
+              style={{ flex: 1 }}
             ></TextField>
             {filterTitleTwoHappen && (
               <TextField
+                style={{ flex: 1 }}
                 disabled
                 variant="outlined"
                 size="small"
@@ -276,6 +292,7 @@ const FilterTitle = ({
               ></TextField>
             )}
             <TextField
+              style={{ flex: 1 }}
               type="number"
               variant="outlined"
               size="small"
@@ -290,6 +307,7 @@ const FilterTitle = ({
               }
             ></TextField>
             <TextField
+              style={{ flex: 1 }}
               type="number"
               variant="outlined"
               size="small"

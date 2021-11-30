@@ -9,13 +9,13 @@ const InputTitle = ({ control, defaultValue, errors }) => {
         render={({ field }) => (
           <TextField
             {...field}
-            sx={{ mb: 1, width: "600px" }}
+            style={{ marginBottom: 5, width: "600px" }}
             size="small"
             variant="outlined"
             label="Title"
+            defaultValue={defaultValue}
           />
         )}
-        defaultValue={defaultValue}
         name="title"
         control={control}
         rules={{
@@ -29,8 +29,8 @@ const InputTitle = ({ control, defaultValue, errors }) => {
             message: "description has 100 characters limit",
           },
           pattern: {
-            value: /^[A-Za-z0-9_]+$/,
-            message: "title only contain letters numbers and underscore",
+            value: /^[A-Za-z0-9\s]+$/,
+            message: "title only contain letters numbers and backspace",
           },
         }}
       />

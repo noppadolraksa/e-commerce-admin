@@ -2,10 +2,8 @@ import React from "react";
 
 import { Select, MenuItem, InputLabel, FormControl } from "@material-ui/core";
 import { Controller } from "react-hook-form";
-import { useState } from "react";
 
-const SelectCondition = ({ control }) => {
-  const [condition, setCondition] = useState("");
+const SelectCondition = ({ control, condition, setCondition }) => {
   return (
     <Controller
       render={({ field }) => (
@@ -15,7 +13,7 @@ const SelectCondition = ({ control }) => {
             {...field}
             size="small"
             labelId="demo-simple-select-label"
-            sx={{ mb: 1, width: "300px" }}
+            style={{ marginBottom: 5, width: "300px" }}
             // sx={textStyle}
             value={condition}
             label="Condition*"

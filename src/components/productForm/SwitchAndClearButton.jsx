@@ -8,7 +8,7 @@ const SwitchAndClearButton = ({
   handleClearFilter,
 }) => {
   return (
-    <div>
+    <div style={{ display: "flex" }}>
       <FormControlLabel
         sx={{
           display: "block",

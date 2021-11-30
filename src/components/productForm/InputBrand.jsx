@@ -28,8 +28,8 @@ const InputTitle = ({ control, defaultValue }) => {
             message: "brand has 50 characters limit",
           },
           pattern: {
-            value: /^[A-Za-z0-9_]+$/,
-            message: "brand only contain letters numbers and underscore",
+            value: /^[A-Za-z0-9\s]+$/,
+            message: "brand only contain letters numbers and backspace",
           },
         }}
         control={control}
