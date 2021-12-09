@@ -1,20 +1,70 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { userRequest } from "../../requestMethods";
-import { useSelector } from "react-redux";
+import { Box } from "@mui/system";
+import { Modal, Typography } from "@mui/material";
 import { mobile } from "../../responsive";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+
+const Text = styled.p``;
+
+const style = {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "#f2f2f2",
+  opacity: "0.95",
+  border: "1px solid #808080",
+  boxShadow: 24,
+  p: 4,
+};
 
 const Container = styled.div`
   flex: 4;
   margin: 10px;
 `;
 
-const Title = styled.h1`
-  color: #555;
-  font-weight: 500;
-  font-size: 30px;
-  margin-left: 20px;
+const UserContainer = styled.div`
+  display: flex;
+  margin: 10px;
+  align-items: center;
+`;
+
+const UserImg = styled.img`
+  width: 120px;
+  height: 120px;
+  margin: 10px;
+  padding: 5px;
+  border: 1px solid lightgray;
+`;
+
+const Topic = styled.p`
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+
+  color: gray;
+`;
+
+const UserDetail = styled.div``;
+const UserText = styled.span`
+  font-size: 12px;
+  flex: 5;
+  color: gray;
+`;
+const UserHeader = styled.div`
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+  justify-content: space-between;
+`;
+
+const OrderAddressContainer = styled.div``;
+const OrderAddress = styled.p`
+  font-size: 12px;
+  margin: 5px;
 `;
 
 const OrderWrapper = styled.div`
@@ -41,6 +91,11 @@ const OrderHeaderText = styled.p`
 `;
 
 const OrderStatus = styled.span``;
+const StatusContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
 
 const TextStatus = styled.p`
   font-size: 12px;
@@ -55,6 +110,7 @@ const TextStatus = styled.p`
     ${(props) => props.status === "pending" && "white"};
   padding: 5px;
   margin: 5px;
+  cursor: pointer;
   ${mobile({ fontSize: "8px" })}
 `;
 
@@ -152,17 +208,39 @@ const NoItemText = styled.p`
   font-size: 24px;
 `;
 
-const TransactionEdit = ({ status }) => {
-  const [orders, setOrders] = useState(null);
-  const user = useSelector((state) => state.user.currentUser);
+const TransactionEdit = () => {
+  const [orders, setOrders] = useState([]);
+  const location = useLocation();
+  const _id = location.pathname.split("/")[2];
+
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+
+  const handleClose = () => setOpen(false);
+
+  const handleStatus = async (e) => {
+    try {
+      const res = await userRequest.put(`/order/${_id}`, { status: e });
+      setOrders([res.data]);
+      setOpen(false);
+    } catch (err) {
+      if (err.response.data === "Token is not valid!") {
+        alert(
+          `Error status : ${err.response.status} ${err.response.data} Please sign in again..`
+        );
+      } else {
+        alert(`Error status : ${err.response.status} ${err.response.data}`);
+      }
+    }
+  };
 
   useEffect(() => {
     const getOrders = async () => {
       try {
-        const res = await userRequest.get(`/order/find/${user._id}`);
-        status !== "all"
-          ? setOrders(res.data.filter((item) => item.status === status))
-          : setOrders(res.data);
+        const res = await userRequest.get(`/order/findorder/${_id}`);
+
+        setOrders([res.data]);
       } catch (err) {
         if (err.response.data === "Token is not valid!") {
           alert(
@@ -174,11 +252,46 @@ const TransactionEdit = ({ status }) => {
       }
     };
     getOrders();
-  }, [status, user._id]);
+  }, [_id]);
   console.log(orders);
+
+  const handleClick = () => handleOpen();
   return (
     <Container>
-      <Title>{status[0].toUpperCase() + status.substring(1)} Order</Title>
+      <UserContainer>
+        <UserImg src={orders?.[0]?.user?.img} alt="userImage" />
+        <UserDetail>
+          <UserHeader>
+            <Topic>ID: </Topic>
+            <UserText>{orders?.[0]?.user?._id}</UserText>
+          </UserHeader>
+          <UserHeader>
+            <Topic>Username: </Topic>
+            <UserText>{orders?.[0]?.user?.username}</UserText>
+          </UserHeader>
+          <UserHeader>
+            <Topic>FirstName: </Topic>
+            <UserText>{orders?.[0]?.user?.firstname}</UserText>
+          </UserHeader>
+          <UserHeader>
+            <Topic>LastName: </Topic>
+            <UserText>{orders?.[0]?.user?.lastname}</UserText>
+          </UserHeader>
+          <UserHeader>
+            <Topic>Email: </Topic>
+            <UserText>{orders?.[0]?.user?.email}</UserText>
+          </UserHeader>
+          <UserHeader>
+            <Topic>Phone: </Topic>
+            <UserText>{orders?.[0]?.user?.phone}</UserText>
+          </UserHeader>
+          <UserHeader>
+            <Topic>Address: </Topic>
+            <UserText>{orders?.[0]?.user?.address}</UserText>
+          </UserHeader>
+        </UserDetail>
+      </UserContainer>
+
       {orders?.map((order, index) => (
         <OrderWrapper key={order._id}>
           <OrderHeader>
@@ -186,7 +299,9 @@ const TransactionEdit = ({ status }) => {
               <b>#{index + 1}</b> Order id: {order._id}
             </OrderHeaderText>
             <OrderStatus>
-              <TextStatus status={order.status}>{order.status}</TextStatus>
+              <TextStatus status={order.status} onClick={() => handleClick()}>
+                {order.status}
+              </TextStatus>
             </OrderStatus>
           </OrderHeader>
           {order.products?.map((product) => (
@@ -215,6 +330,9 @@ const TransactionEdit = ({ status }) => {
               </OrderProductRight>
             </OrderProduct>
           ))}
+          <OrderAddressContainer>
+            <OrderAddress>{`ที่อยู่จัดส่ง: ${order.address.city}, ${order.address.line1}, ${order.address.line2}, ${order.address.postal_code}, ${order.address.country}`}</OrderAddress>
+          </OrderAddressContainer>
           <OrderFooter>
             <OrderTimestamp>{order.createdAt.substring(0, 19)}</OrderTimestamp>
             <TotalPrice>
@@ -223,11 +341,42 @@ const TransactionEdit = ({ status }) => {
           </OrderFooter>
         </OrderWrapper>
       ))}
-      {orders?.length === 0 && (
-        <NoItemWrapper>
-          <NoItemText>There is no {status} order..</NoItemText>
-        </NoItemWrapper>
-      )}
+      <div>
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              <Text>Select Status..</Text>
+            </Typography>
+            <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+              <StatusContainer>
+                <TextStatus
+                  status="success"
+                  onClick={() => handleStatus("success")}
+                >
+                  success
+                </TextStatus>
+                <TextStatus
+                  status="cancel"
+                  onClick={() => handleStatus("cancel")}
+                >
+                  cancel
+                </TextStatus>
+                <TextStatus
+                  status="pending"
+                  onClick={() => handleStatus("pending")}
+                >
+                  pending
+                </TextStatus>
+              </StatusContainer>
+            </Typography>
+          </Box>
+        </Modal>
+      </div>
     </Container>
   );
 };

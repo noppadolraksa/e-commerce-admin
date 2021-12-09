@@ -44,7 +44,7 @@
   border-radius: 10px;
 }
 
-.widgetLgButton.approved {
+.widgetLgButton.success {
   background-color: #e5faf2;
   color: #3bb077;
 }

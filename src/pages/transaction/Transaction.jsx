@@ -21,7 +21,7 @@ const Transactions = () => {
       try {
         const res = await userRequest.get("/order");
 
-        setOrders(res.data.orders);
+        setOrders(res.data);
       } catch (err) {
         if (err.response.data === "Token is not valid!") {
           alert(

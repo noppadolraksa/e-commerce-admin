@@ -9,16 +9,16 @@ export default function WidgetLg() {
   useEffect(() => {
     const getOrders = async () => {
       try {
-        const res = await userRequest.get("order");
+        const res = await userRequest.get("/order");
 
-        setOrders(res.data.orders);
+        setOrders(res.data);
       } catch (err) {
         console.log(err);
       }
     };
     getOrders();
   }, []);
-  console.log(orders);
+
   const Button = ({ type }) => {
     return <button className={"widgetLgButton " + type}>{type}</button>;
   };
