@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../redux/apiCalls";
@@ -13,14 +13,14 @@ const Login = () => {
   const handleClick = (e) => {
     e.preventDefault();
     try {
-      login(dispatch, { username, password }).then(() => {
-        history.push("/loginsuccess");
-        window.location = "/";
-      });
+      login(dispatch, { username, password });
     } catch (err) {
       console.error(err);
     }
   };
+  useEffect(() => {
+    admin.error && alert("You are not an admin !");
+  }, [admin.error]);
 
   return (
     <div

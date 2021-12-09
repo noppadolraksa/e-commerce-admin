@@ -18,7 +18,7 @@ export default function WidgetLg() {
     };
     getOrders();
   }, []);
-
+  console.log(orders);
   const Button = ({ type }) => {
     return <button className={"widgetLgButton " + type}>{type}</button>;
   };
@@ -38,7 +38,7 @@ export default function WidgetLg() {
             <tr className="widgetLgTr" key={order._id}>
               <td className="widgetLgUser">
                 <img
-                  src="https://firebasestorage.googleapis.com/v0/b/myshop-e-commerce.appspot.com/o/static%20file%2F720101.png?alt=media&token=4899661b-d3ef-45ed-bb2d-9862d3406343"
+                  src={order.user.img}
                   alt="widgetLg"
                   className="widgetLgImg"
                 />

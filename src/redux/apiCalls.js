@@ -21,7 +21,15 @@ export const login = async (dispatch, user) => {
   try {
     const res = await publicRequest.post("/auth/login", user);
     dispatch(loginSuccess(res.data)); //name email whatever
+    window.location.href = "/";
   } catch (err) {
+    if (err.response.data === "Token is not valid!") {
+      alert(
+        `Error status : ${err.response.status} ${err.response.data} Please sign in again..`
+      );
+    } else {
+      alert(`Error status : ${err.response.status} ${err.response.data}`);
+    }
     dispatch(loginFailure());
   }
 };
@@ -53,6 +61,13 @@ export const updateProduct = async (id, product, dispatch) => {
     const res = await userRequest.put(`/product/${id}`, product);
     dispatch(updateProductSuccess({ id, product }));
   } catch (err) {
+    if (err.response.data === "Token is not valid!") {
+      alert(
+        `Error status : ${err.response.status} ${err.response.data} Please sign in again..`
+      );
+    } else {
+      alert(`Error status : ${err.response.status} ${err.response.data}`);
+    }
     dispatch(updateProductFailure());
   }
 };

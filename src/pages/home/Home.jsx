@@ -38,7 +38,15 @@ export default function Home() {
             { name: MONTHS[item._id - 1], "Active User": item.total },
           ])
         );
-      } catch {}
+      } catch (err) {
+        if (err.response.data === "Token is not valid!") {
+          alert(
+            `Error status : ${err.response.status} ${err.response.data} Please sign in again..`
+          );
+        } else {
+          alert(`Error status : ${err.response.status} ${err.response.data}`);
+        }
+      }
     };
     getStats();
   }, [MONTHS]);

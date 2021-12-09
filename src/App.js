@@ -16,6 +16,8 @@ import NewProduct from "./pages/newProduct/NewProduct";
 import Login from "./pages/login/Login";
 import { useSelector } from "react-redux";
 import LoginSuccess from "./pages/login/LoginSuccess";
+import TransactionEdit from "./pages/transaction/TransactionEdit";
+import Transactions from "./pages/transaction/Transaction";
 
 function App() {
   const admin = useSelector((state) => state.user.currentUser?.isAdmin);
@@ -44,6 +46,12 @@ function App() {
               </Route>
               <Route path="/newproduct">
                 <NewProduct />
+              </Route>
+              <Route path="/transactions">
+                <Transactions />
+              </Route>
+              <Route path="/transaction/:orderId">
+                <TransactionEdit />
               </Route>
             </div>
           </>
