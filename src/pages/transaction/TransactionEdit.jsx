@@ -49,11 +49,13 @@ const Topic = styled.p`
 `;
 
 const UserDetail = styled.div``;
+
 const UserText = styled.span`
   font-size: 12px;
   flex: 5;
   color: gray;
 `;
+
 const UserHeader = styled.div`
   display: flex;
   align-items: center;
@@ -91,6 +93,7 @@ const OrderHeaderText = styled.p`
 `;
 
 const OrderStatus = styled.span``;
+
 const StatusContainer = styled.div`
   display: flex;
   align-items: center;
@@ -159,6 +162,7 @@ const ProductPrice = styled.p`
   margin: 0px 10px 0px 10px;
   ${mobile({ fontSize: "10px", margin: "0px 5px 0px 3px" })}
 `;
+
 const ImgContainer = styled.div`
   margin: 5px 15px 5px 15px;
   padding: 5px 5px 5px 5px;
@@ -253,7 +257,6 @@ const TransactionEdit = () => {
     };
     getOrders();
   }, [_id]);
-  console.log(orders);
 
   const handleClick = () => handleOpen();
   return (
