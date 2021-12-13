@@ -70,7 +70,10 @@ const Transactions = () => {
       width: 150,
       renderCell: (params) => {
         return (
-          <Link to={"/transaction/" + params.row._id}>
+          <Link
+            style={{ textDecoration: "none" }}
+            to={"/transaction/" + params.row._id}
+          >
             <button className="productListEdit">Edit</button>
           </Link>
         );

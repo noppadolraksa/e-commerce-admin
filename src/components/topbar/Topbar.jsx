@@ -24,7 +24,12 @@ export default function Topbar() {
       <div className="topbarWrapper">
         <div className="topLeft">
           <span className="logo">
-            <Link to="/">my-shop admin </Link>
+            <Link
+              style={{ textDecoration: "inherit", color: "inherit" }}
+              to="/"
+            >
+              my-shop admin{" "}
+            </Link>
           </span>
         </div>
         <div className="topRight">

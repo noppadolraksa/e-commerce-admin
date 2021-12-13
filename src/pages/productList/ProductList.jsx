@@ -49,7 +49,10 @@ export default function ProductList() {
       renderCell: (params) => {
         return (
           <>
-            <Link to={"/product/" + params.row._id}>
+            <Link
+              style={{ textDecoration: "none" }}
+              to={"/product/" + params.row._id}
+            >
               <button className="productListEdit">Edit</button>
             </Link>
             <DeleteOutline
@@ -64,7 +67,10 @@ export default function ProductList() {
 
   return (
     <div className="productList">
-      <Link to="/newproduct">
+      <Link
+        style={{ textDecoration: "inherit", color: "inherit" }}
+        to="/newproduct"
+      >
         <button className="productAddButton">Create</button>
       </Link>
       <DataGrid

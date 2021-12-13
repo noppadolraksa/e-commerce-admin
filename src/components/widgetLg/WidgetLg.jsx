@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { userRequest } from "../../requestMethods";
 import "./widgetLg.css";
 import { format } from "timeago.js";
+import { Link } from "react-router-dom";
 
 export default function WidgetLg() {
   const [orders, setOrders] = useState([]);
@@ -33,19 +34,43 @@ export default function WidgetLg() {
             <th className="widgetLgTh">Amount</th>
             <th className="widgetLgTh">Status</th>
           </tr>
-
+          {console.log(orders)}
           {orders.map((order) => (
             <tr className="widgetLgTr" key={order._id}>
               <td className="widgetLgUser">
-                <img
-                  src={order.user.img}
-                  alt="widgetLg"
-                  className="widgetLgImg"
-                />
-                <span className="widgetLgName ">{order.userId}</span>
+                <Link
+                  style={{ color: "inherit", textDecoration: "inherit" }}
+                  to={`/transaction/${order._id}`}
+                >
+                  <img
+                    component={Link}
+                    to={`/transaction/${order._id}`}
+                    src={order.user.img}
+                    alt="widgetLg"
+                    className="widgetLgImg"
+                  />
+                </Link>
+                <Link
+                  style={{ color: "inherit", textDecoration: "inherit" }}
+                  to={`/transaction/${order._id}`}
+                >
+                  <span className="widgetLgName ">{order.userId}</span>
+                </Link>
               </td>
-              <td className="widgetLgDate">{format(order.createdAt)}</td>
-              <td className="widgetLgAmount">{`฿${order.amount}`}</td>
+              <td className="widgetLgDate">
+                <Link
+                  style={{ color: "inherit", textDecoration: "inherit" }}
+                  to={`/transaction/${order._id}`}
+                >
+                  {format(order.createdAt)}
+                </Link>
+              </td>
+              <td className="widgetLgAmount">
+                <Link
+                  style={{ color: "inherit", textDecoration: "inherit" }}
+                  to={`/transaction/${order._id}`}
+                >{`฿${order.amount}`}</Link>
+              </td>
               <td className="widgetLgStatus">
                 <Button type={order.status} />
               </td>

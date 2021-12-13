@@ -22,7 +22,11 @@ export default function Sidebar() {
         <div className="sidebarMenu">
           <h3 className="sidebarTitle">Dashboard</h3>
           <ul className="sidebarList">
-            <Link to="/" className="link">
+            <Link
+              style={{ textDecoration: "inherit", color: "inherit" }}
+              to="/"
+              className="link"
+            >
               <li className="sidebarListItem active">
                 <LineStyle className="sidebarIcon" />
                 Home
@@ -41,19 +45,31 @@ export default function Sidebar() {
         <div className="sidebarMenu">
           <h3 className="sidebarTitle">Quick Menu</h3>
           <ul className="sidebarList">
-            <Link to="/users" className="link">
+            <Link
+              style={{ textDecoration: "none" }}
+              to="/users"
+              className="link"
+            >
               <li className="sidebarListItem">
                 <PermIdentity className="sidebarIcon" />
                 Users
               </li>
             </Link>
-            <Link to="/products" className="link">
+            <Link
+              style={{ textDecoration: "none" }}
+              to="/products"
+              className="link"
+            >
               <li className="sidebarListItem">
                 <Storefront className="sidebarIcon" />
                 Products
               </li>
             </Link>
-            <Link to="/transactions" className="link">
+            <Link
+              style={{ textDecoration: "none" }}
+              to="/transactions"
+              className="link"
+            >
               <li className="sidebarListItem">
                 <AttachMoney className="sidebarIcon" />
                 Transactions

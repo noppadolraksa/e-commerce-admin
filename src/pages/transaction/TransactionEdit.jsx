@@ -311,7 +311,10 @@ const TransactionEdit = () => {
             <OrderProduct key={product._id}>
               <OrderProductLeft>
                 <ImgContainer>
-                  <Link to={`/product/${product._id}`}>
+                  <Link
+                    style={{ textDecoration: "none" }}
+                    to={`/product/${product._id}`}
+                  >
                     <Img alt="product" src={product.product[0].img} />
                   </Link>
                 </ImgContainer>
