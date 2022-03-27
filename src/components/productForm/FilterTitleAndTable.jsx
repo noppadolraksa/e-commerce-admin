@@ -114,7 +114,7 @@ const FilterTitle = ({
       )
     );
     const res = await row.map((item, i) => (item.id = i));
-    setRows(row);
+    setRows();
   };
 
   const handleRows = (e) => {
